@@ -1,6 +1,6 @@
 /******************************************
 
-server request and settings functions 
+server request and settings functions (depends on Jquery)
 
 *******************************************/
 
@@ -13,8 +13,17 @@ SERVER REQUEST FUNCTIONS
 ************************************/
 
 // return the response (in JS object) of the "getTeam" server request.
-function getTeamModel() {
-
+function getTeamModel(callback) {
+	getServerIp( function( ip ) {
+		getTeamCode( function( code ) {
+			$.ajax({
+				url: "http://" + ip + "/teams/getTeam",
+				data: { code: code }
+			}).done( function ( data ) {
+				callback(data);
+			});
+		})
+	});
 }
 
 
@@ -48,8 +57,10 @@ SETTINGS FUCNTIONS
 ************************************/
 
 // returns team code from localStorage
-function getTeamCode() {
-
+function getTeamCode(callback) {
+	$.getJSON("../default_settings.json", function(json) {
+		callback(json.teamCode);
+	});
 }
 
 // sets team code in localStorage
@@ -69,8 +80,10 @@ function setUsername() {
 
 
 // server ip
-function getServerIp() {
-
+function getServerIp(callback) {
+	$.getJSON("../default_settings.json", function(json) {
+		callback(json.serverIp);
+	});
 }
 
 function setServerIp() {
