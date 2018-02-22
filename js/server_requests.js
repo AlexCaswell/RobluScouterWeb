@@ -17,10 +17,11 @@ function getTeamModel(callback) {
 	getServerIp( function( ip ) {
 		getTeamCode( function( code ) {
 			$.ajax({
+				type: 'GET',
 				url: "http://" + ip + "/teams/getTeam",
 				data: { code: code }
 			}).done( function ( data ) {
-				callback(data);
+				callback(data.data);
 			});
 		})
 	});
@@ -41,7 +42,17 @@ function getActiveEventName() {
 
 // returns array of all checkouts filtered by options
 function getCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut) {
-
+	getServerIp( function( ip ) {
+		getTeamCode( function( code ) {
+			$.ajax({
+				type: 'GET',
+				url: "http://" + ip + "/checkouts/pullCheckouts",
+				data: { code: code }
+			}).done( function ( data ) {
+				callback(data.data);
+			});
+		})
+	});
 }
 
 
@@ -92,8 +103,10 @@ function setServerIp() {
 
 
 // auto-chekout mode
-function getAutoCheckoutMode() {
-
+function getAutoCheckoutMode(callback) {
+	$.getJSON("../default_settings.json", function(json) {
+		callback(json.autoCheckoutMode);
+	});
 }
 
 function setAutoCheckoutMode() {

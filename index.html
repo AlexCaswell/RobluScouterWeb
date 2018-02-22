@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Roblu Scouter - Web Interface</title>
+	<title>Roblu Scouter - </title>
 
 	<!-- Materilize -->
 	<!--Import Google Icon Font-->
@@ -19,8 +19,8 @@
 <body>
  	<nav class="nav-extended" style="position: fixed; top: 0; left: 0; z-index: 1000;">
  		<div class="nav-wrapper">
-      		<a href="#" style="font-size: 1.6rem; padding: 20px 0 5px 20px; display: block; line-height: 1.6rem;">Roblu Scouter Web</a>
-      		<a href="#" id="active_event_label" style="font-size: 1.1rem; padding: 0 0 10px 25px; display: block; line-height: 1.1rem;">Miami Valley Regional</a>
+      		<a href="#" id="title" style="font-size: 1.6rem; padding: 20px 0 5px 20px; display: block; line-height: 1.6rem;"><br></a>
+      		<a href="#" id="active_event_label" style="font-size: 1.1rem; padding: 0 0 10px 25px; display: block; line-height: 1.1rem;"><br></a>
 
       		<!-- settings button and menu -->
 			<a href="#" id="settings_button" data-activates='settings_list' class="dropdown-button" style="position: absolute; top: 5px; right: 15px;"><i class="material-icons">more_vert</i></a>
@@ -223,10 +223,21 @@
 		$("body").attr("style", "background: " + backgroundColor + " !important;");
 		$("#settings_list").attr("style", $("#settings_list").attr("style") + " background-color: " + backgroundColor + " !important;");
 
-
+		// Set active event name from server
 		getTeamModel( function(data) {
-			alert(data);
+			$("#active_event_label").text(data.active_event_name);
 		});
+
+		// Set scouter role from settings
+		getAutoCheckoutMode( function( ac_mode ) {
+			var title = "Roblu Scouter"
+			alert(ac_mode);
+			if (ac_mode != 0) {
+				title += " - " + getAutoCheckoutModeString(ac_mode);
+			}
+			$("#title").text(title);
+		});
+
  	});
 
 </script>
@@ -246,6 +257,9 @@ function loadCheckouts() {
 
 <!-- import server_request.js -->
 <script type="text/javascript" src="js/server_requests.js"></script>
+
+<!-- import util_functions.js -->
+<script type="text/javascript" src="js/util_functions.js"></script>
 
 </body>
 
