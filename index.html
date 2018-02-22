@@ -77,116 +77,15 @@
  				</p>
  			</div>
  		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
  	</div>
  	<!-- "My Checkouts" tab -->
  	<div id="my_checkouts" class="col s12" style="margin: 0 3% 0 3%;">
  		<div class="card blue-grey darken-1">
  			<div class="card-content white-text">
- 				<span class="card-title">Harrison Robotics</span>
+ 				<span class="card-title">Card title</span>
  				<p>
-				Quals 5<br>
-				Available
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Quals 46</span>
- 				<p>
-				Match scheduled for Mar 10, 2017 1:23 PM<br>
-				You are on the red alliance<br>
-				Teammates: #1038, #2451, #3266<br>
-				Opponents: #379, #48, #5667<br>
+				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+ 				tempor incididunt ut labore et dolore magna aliqua.
  				</p>
  			</div>
  		</div>
@@ -235,6 +134,27 @@
 			}
 			$("#title").text(title);
 		});
+
+		// for(var i = 0; i < 100; i++) {
+		// 	$.ajax({
+		// 		type: 'GET',
+		// 		data: {
+		// 			team: "title",
+		// 			type: "content",
+		// 			card_color: cardColor,
+		// 			available: "Available",
+		// 			onclick: "alert('hi')"
+		// 		},
+		// 		url: 'cards/get_checkout.php'
+		// 	}).done( function(data) {
+		// 			$("#checkouts").html($("#checkouts").html() + data);
+		// 	});
+		// }
+
+		getCheckouts(false, true, true, 2, function( checkouts ) {
+			
+		});
+
 
  	});
 

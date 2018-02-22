@@ -28,28 +28,93 @@ function getTeamModel(callback) {
 }
 
 
-// returns JS object containing the contents of the "ui" object within the "Team model"
-function getUiModel() {
-
-}
-
-
-// returns active_event_name string
-function getActiveEventName() {
-
-}
-
 
 // returns array of all checkouts filtered by options
-function getCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut) {
+function getCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut, deviceRole, callback) {
 	getServerIp( function( ip ) {
 		getTeamCode( function( code ) {
 			$.ajax({
 				type: 'GET',
 				url: "http://" + ip + "/checkouts/pullCheckouts",
-				data: { code: code }
+				data: { code: code, time: Date.now() }
 			}).done( function ( data ) {
-				callback(data.data);
+
+				// sort checkouts based on "checkbox variables"
+				var sorted_checkouts_c;
+				var index = 0;
+
+				console.log(JSON.stringify(data.data));
+
+			    // for (var i = 0; i < data.data.length; i++) {
+			    // 	var checkout = data.data[i];
+
+			    // 	// Show pit checkouts
+			    // 	if(showPitCheckouts && checkout.team.tabs[0].matchType == "PIT") {
+			    // 		sorted_checkouts_c[index] = checkout;
+			    // 		index++;
+			    // 	}
+			    // 	// Show comleted checkouts
+			    // 	if(showCompletedCheckouts && checkout.status == 2) {
+			    // 		sorted_checkouts_c[index] = checkout;
+			    // 		index++;
+			    // 	}
+			    // 	// Show checked out
+			    // 	if(showCheckedOut && checkout.status == 1) {
+			    // 		sorted_checkouts_c[index] = checkout;
+			    // 		index++;
+			    // 	}
+			    // }
+
+			    // // sort remaining checkouts by device role
+			    // var sorted_checkouts_cd;
+			    // index = 0;
+
+			    // if(deviceRole != 0) {
+			    // 	for(var i = 0; i < sorted_checkouts_c.length; i++) {
+			    // 		var checkout = sorted_checkouts_c[i];
+
+			    // 		// Pit role
+				   //  	if(checkout.team.tabs[0].matchType == "PIT" && deviceRole == 7) {
+				   //  		sorted_checkouts_cd[index] = checkout;
+				   //  		index++;
+				   //  	}
+				   //  	// Blue 3 role
+				   //  	if(checkout.team.tabs[0].alliancePosition == 6 && deviceRole == 6) {
+				   //  		sorted_checkouts_cd[index] = checkout;
+				   //  		index++;
+				   //  	}
+				   //  	// Blue 2 role
+				   //  	if(checkout.team.tabs[0].alliancePosition == 5 && deviceRole == 5) {
+				   //  		sorted_checkouts_cd[index] = checkout;
+				   //  		index++;
+				   //  	}
+				   //  	// Blue 1 role
+				   //  	if(checkout.team.tabs[0].alliancePosition == 4 && deviceRole == 4) {
+				   //  		sorted_checkouts_cd[index] = checkout;
+				   //  		index++;
+				   //  	}
+				   //  	// Red 3 role
+				   //  	if(checkout.team.tabs[0].alliancePosition == 3 && deviceRole == 3) {
+				   //  		sorted_checkouts_cd[index] = checkout;
+				   //  		index++;
+				   //  	}
+				   //  	// Red 2 role
+				   //  	if(checkout.team.tabs[0].alliancePosition == 2 && deviceRole == 2) {
+				   //  		sorted_checkouts_cd[index] = checkout;
+				   //  		index++;
+				   //  	}
+				   //  	// Red 1 role
+				   //  	if(checkout.team.tabs[0].alliancePosition == 1 && deviceRole == 1) {
+				   //  		sorted_checkouts_cd[index] = checkout;
+				   //  		index++;
+				   //  	}
+			   	// 	}
+
+			   	// 	//return sorted checkouts
+			   	// 	callback(sorted_checkouts_cd);
+
+			    // }
+
 			});
 		})
 	});
