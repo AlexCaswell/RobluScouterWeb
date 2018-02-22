@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Roblu Scouter - </title>
+	<title>Roblu Scouter Web Interface </title>
 
 	<!-- Materilize -->
 	<!--Import Google Icon Font-->
@@ -197,7 +197,6 @@
 <script type="text/javascript">
 
 
-	// Ui initializations
 	$(document).ready(function() {
 
 		// initialize settings dropdown
@@ -230,8 +229,7 @@
 
 		// Set scouter role from settings
 		getAutoCheckoutMode( function( ac_mode ) {
-			var title = "Roblu Scouter"
-			alert(ac_mode);
+			var title = "Roblu Scouter";
 			if (ac_mode != 0) {
 				title += " - " + getAutoCheckoutModeString(ac_mode);
 			}
