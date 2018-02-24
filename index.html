@@ -85,13 +85,21 @@
 <!-- UI -->
 <script type="text/javascript">
 
-	// UI constants
+	// UI setting defaults
 	var primaryColor = "#3F51B5";
 	var cardColor = "#444444";
 	var backgroundColor = "#303030";
 
 
 	$(document).ready(function() {
+
+
+		// Make sure browser is compatible with settings storage method (localStorage)
+		if(typeof(Storage) === "undefined") {
+			window.location.replace("error.html");
+		}else {
+			loadDefaultsIfNeeded();
+		}
 
 		// initialize settings dropdown
 		$('.dropdown-button').dropdown({
@@ -118,13 +126,11 @@
 		});
 
 		// Set scouter role from settings
-		getAutoCheckoutMode( function( ac_mode ) {
-			var title = "Roblu Scouter";
-			if (ac_mode != 0) {
-				title += " - " + getAutoCheckoutModeString(ac_mode);
-			}
-			$("#title").text(title);
-		});
+		var title = "Roblu Scouter";
+		if (localStorage.getItem("autoCheckoutMode") != 0) {
+			title += " - " + getAutoCheckoutModeString(localStorage.getItem("autoCheckoutMode"));
+		}
+		$("#title").text(title);
 
 		loadCheckouts();
 
@@ -133,6 +139,7 @@
 </script>
 
 <script type="text/javascript">
+
 	
 function loadCheckouts() {
 
@@ -144,30 +151,25 @@ function loadCheckouts() {
 	var show_completed_checkouts = $("#show_completed_checkouts").is(':checked');
 	var show_checked_out = $("#show_checked_out").is(':checked');
 
-	console.log(show_pit_checkouts);
-	console.log(show_completed_checkouts);
-	console.log(show_checked_out);
+	//load checkouts from server into checkouts div
 
-
-	getAutoCheckoutMode( function(ac_mode) {
-		getCheckouts(show_pit_checkouts, show_completed_checkouts, show_checked_out, ac_mode, function( checkouts ) {
-			for(var i = 0; i < checkouts.length; i++) {
-				var checkout = checkouts[i];
-				$.ajax({
-					type: 'GET',
-					data: {
-						team: checkout.team.name,
-						type: checkout.team.tabs[0].matchType,
-						card_color: cardColor,
-						available: "Available",
-						onclick: "alert('hi')"
-					},
-					url: 'cards/get_checkout.php'
-				}).done( function(data) {
-						$("#checkouts").html($("#checkouts").html() + data);
-				});
-			}
-		});
+	getCheckouts(show_pit_checkouts, show_completed_checkouts, show_checked_out, localStorage.getItem("autoCheckoutMode"), function( checkouts ) {
+		for(var i = 0; i < checkouts.length; i++) {
+			var checkout = checkouts[i];
+			$.ajax({
+				type: 'GET',
+				data: {
+					team: checkout.team.name,
+					type: checkout.team.tabs[0].matchType,
+					card_color: cardColor,
+					available: "Available",
+					onclick: "alert('hi')"
+				},
+				url: 'cards/get_checkout.php'
+			}).done( function(data) {
+					$("#checkouts").html($("#checkouts").html() + data);
+			});
+		}
 	});
 
 }
