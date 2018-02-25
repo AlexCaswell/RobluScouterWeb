@@ -139,7 +139,7 @@
 
 <script type="text/javascript">
 
-	
+// loads checkouts from the server into the checkouts div
 function loadCheckouts() {
 
 	//Clear checkouts div
@@ -160,9 +160,12 @@ function loadCheckouts() {
 				data: {
 					team: checkout.team.name,
 					type: checkout.team.tabs[0].matchType,
+					match_order: checkout.team.tabs[0].matchOrder,
 					card_color: cardColor,
 					available: "Available",
-					onclick: "alert('hi')"
+					onclick: "openCheckout(" + checkout.id + ", true)",
+					checkout: JSON.stringify(checkout),
+					id: checkout.id
 				},
 				url: 'cards/get_checkout.php'
 			}).done( function(data) {
@@ -172,6 +175,16 @@ function loadCheckouts() {
 	});
 
 }
+
+// Open (send to edit_data.php) a ckeccout div with given id 
+function openCheckout(id, editable) {
+
+	var req_url = "edit_data.html?checkout=" +  $("#"+id).attr("checkout") + "&editable=" + editable;
+
+	window.location.replace(req_url);
+}
+
+
 
 
 </script>
