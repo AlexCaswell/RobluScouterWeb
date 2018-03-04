@@ -68,17 +68,7 @@
  	<!-- "Checkouts" tab -->
  	<div id="checkouts" class="col s12" style="margin: 0 3% 0 3%;"></div>
  	<!-- "My Checkouts" tab -->
- 	<div id="my_checkouts" class="col s12" style="margin: 0 3% 0 3%;">
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 	</div>
+ 	<div id="my_checkouts" class="col s12" style="margin: 0 3% 0 3%;"></div>
 
 
 <!-- UI -->
@@ -132,6 +122,8 @@
 		$("#title").text(title);
 
 		loadCheckouts();
+		loadMyCheckouts();
+
 
  	});
 
@@ -155,15 +147,29 @@ function loadCheckouts() {
 	getCheckouts(show_pit_checkouts, show_completed_checkouts, show_checked_out, localStorage.getItem("autoCheckoutMode"), function( checkouts ) {
 		for(var i = 0; i < checkouts.length; i++) {
 			var checkout = checkouts[i];
+			var checkout_content = JSON.parse(checkouts[i].content);
+
+			var status;
+			if(checkout.status == 0 || checkout.status == -1) {
+				status = "Available";
+			}
+			if (checkout.status == 1) {
+				status = "Checked out to " + checkout_content.nameTag;
+			}
+			if (checkout.status == 2) {
+				status = "Completed"
+			}
+
 			$.ajax({
-				type: 'GET',
+				type: 'POST',
 				data: {
-					team: checkout.team.name,
-					type: checkout.team.tabs[0].matchType,
-					match_order: checkout.team.tabs[0].matchOrder,
+					team: checkout_content.team.name,
+					type: checkout_content.team.tabs[0].matchType,
+					match_order: checkout_content.team.tabs[0].matchOrder,
 					card_color: cardColor,
-					available: "Available",
-					onclick: "openCheckout(" + checkout.id + ", true)",
+					available: status,
+					onclick: "openCheckout(" + checkout.id + ", false);",
+					checked_out: 0,
 					checkout: JSON.stringify(checkout),
 					id: checkout.id
 				},
@@ -176,14 +182,81 @@ function loadCheckouts() {
 
 }
 
-// Open (send to edit_data.php) a ckeccout div with given id 
-function openCheckout(id, editable) {
-
-	var req_url = "edit_data.html?checkout=" +  $("#"+id).attr("checkout") + "&editable=" + editable;
+//opens checkout in edit_data.html
+function openCheckout(id, ck_out) {
+	if(ck_out == true) {
+		var req_url = "edit_data.html?checkout=" + $("#my_checkouts").find("#" + id).attr("checkout") + "&checked_out=" + ck_out;
+	} else {
+		var req_url = "edit_data.html?checkout=" + $("#checkouts").find("#" + id).attr("checkout") + "&checked_out=" + ck_out;
+	}
 
 	window.location.replace(req_url);
 }
 
+//adds checkout to myCheckouts localStorage item
+function checkout(id) {
+
+	//load myCheckouts array
+	var myCheckouts = [];
+	if(localStorage.getItem("myCheckouts") === null) {
+		localStorage.setItem("myCheckouts", JSON.stringify(myCheckouts));
+	}else {
+		myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
+	}
+
+	//get checkout to checkout
+	var myCheckout = JSON.parse($("#" + id).attr("checkout"));
+
+	//make sure checkout is not already checked out
+	var unique = true;
+	for(var i = 0; i < myCheckouts.length; i++) {
+		if(myCheckout.id == myCheckouts[i].id) { unique = false; }
+	}
+
+	if (unique) {
+		//add checkout to array
+		myCheckouts[myCheckouts.length] = myCheckout;
+
+		//serialize and store array
+		localStorage.setItem("myCheckouts", JSON.stringify(myCheckouts));
+
+		var myCheckout_content = JSON.parse(myCheckout.content);
+		Materialize.toast(myCheckout_content.team.name + " " + myCheckout_content.team.tabs[0].matchType + " " + myCheckout_content.team.tabs[0].matchOrder + " has been checked out to " + localStorage.getItem("username"), 2500);
+	}else {
+		Materialize.toast("Already checked out", 2500);
+	}
+
+}
+
+//loads myCheckouts localStorage item into my_checkouts div
+function loadMyCheckouts() {
+
+	$("#my_checkouts").html("");
+
+	var myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
+	for(var i = 0; i < myCheckouts.length; i++) {
+		var myCheckout = myCheckouts[i];
+		var myCheckout_content = JSON.parse(myCheckouts[i].content);
+
+		$.ajax({
+			type: 'POST',
+			data: {
+				team: myCheckout_content.team.name,
+				type: myCheckout_content.team.tabs[0].matchType,
+				match_order: myCheckout_content.team.tabs[0].matchOrder,
+				card_color: cardColor,
+				available: "Checked out to " + localStorage.getItem("username"),
+				onclick: "openCheckout(" + myCheckout.id + ", true);",
+				checked_out: 1,
+				checkout: JSON.stringify(myCheckout),
+				id: myCheckout.id
+			},
+			url: 'cards/get_checkout.php'
+		}).done( function(data) {
+				$("#my_checkouts").html($("#my_checkouts").html() + data);
+		});
+	}
+}
 
 
 

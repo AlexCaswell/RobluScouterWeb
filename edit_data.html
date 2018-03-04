@@ -18,19 +18,22 @@
 <body>
  	<nav class="nav-extended" style="position: fixed; top: 0; left: 0; z-index: 1000;">
  		<div class="nav-wrapper">
-      		<a href="index.html"><i class="material-icons" style="display: inline-block; z-index: 50px; margin-left: 10px; vertical-align: center;">arrow_back</i></a><a id="team_name" style="font-size: 1.6rem; margin-left: 20px;" class="brand-logo left"><br></a>
+      		<a href="index.html"><i class="material-icons" style="display: inline-block; z-index: 50px; margin-left: 10px; vertical-align: center;">arrow_back</i></a><a id="team_name" style="font-size: 1.6rem; margin-left: 35px;" class="brand-logo left"><br></a>
       		<a href="#" id="team_number" style="font-size: 1.1rem; margin-top: -20px; padding: 0 0 15px 55px; display: block; line-height: 1.1rem;"><br></a>
+      		<!-- settings button and menu -->
+			<a href="#" id="settings_button" data-activates='settings_list' class="dropdown-button" style="position: absolute; top: 10px; right: 30px;"><i class="material-icons">settings</i></a>
+      		<ul style="margin-top: 20px; margin-right: 30px; background: #546E7A; min-width: 250px;" id="settings_list" class="dropdown-content"><style type="text/css">#settings_list li a { color: #FFF; }</style>
+      		</ul>
   		</div>
 
   		<!-- tab selector -->
 	    <div class="nav-content">
-	      <ul class="tabs tabs-transparent">
-	        <li class="tab"><a href="#my_checkouts">My Checkouts</a></li>
-	        <li class="tab"><a class="active" href="#checkouts">Checkouts</a></li>
+	      <ul class="tabs tabs-transparent" id="tab_selectors">
+
 	      </ul>
 	    </div>
- 	</nav><br><br><br><br><br><br>
- 	<div style="margin: 0 3% 0 3%;">
+ 	</nav><br><br><br><br><br><br><br>
+ 	<div style="margin: 0 3% 0 3%;" id="tabs">
  		
  	</div>
 
@@ -51,21 +54,170 @@
 		
 
 		//Load checkout object
-		var url = new URL(window.location.href);
-		var checkout = JSON.parse(url.searchParams.get("checkout"));
-		console.log(checkout.team.name);
+		var eurl = new URL(window.location.href);
+		var checkout_content = JSON.parse(JSON.parse(eurl.searchParams.get("checkout")).content);
+
+		//get wheather checked out
+		var checked_out = eurl.searchParams.get("checked_out");
 
 		// //Set team name and number
-		$("#team_name").html(checkout.team.name);
-		$("#team_number").html("#" + checkout.team.number);
+		$("#team_name").html(checkout_content.team.name);
+		$("#team_number").html("#" + checkout_content.team.number);
+
+		//load tabs with metrics
+		for(var i = 0; i < checkout_content.team.tabs.length; i++) {
+
+			//Add tab button
+			var tab_title;
+			if(checkout_content.team.tabs[i].matchType == "PIT" || checkout_content.team.tabs[i].matchType == "PREDICTIONS") {
+				tab_title = checkout_content.team.tabs[i].matchType; // only show matchType if tab is of type pit or predictions
+			} else {
+				tab_title = checkout_content.team.tabs[i].matchType + " " + checkout_content.team.tabs[i].matchOrder; // include matchOrder
+			}
+			$("#tab_selectors").html($("#tab_selectors").html()
+				+ "<li class='tab'><a href='#"
+				+ checkout_content.team.tabs[i].matchType + "'>"
+				+ tab_title
+				+ "</a></li>"
+			);
+
+			//Add tab content div
+			$("#tabs").html($("#tabs").html()
+				+ "<div class='col s12' id='"
+				+ checkout_content.team.tabs[i].matchType 
+				+ "'></div>"
+			);
+
+			//Populate tab with metrics
+			loadMetrics(checkout_content.team.tabs[i], checkout_content.team.tabs[i].matchType, cardColor, checked_out);
+
+		}
 
 
 
 	});
+
+
+
+	//place html string of metric cards for each metric in the tab into element with id
+	function loadMetrics(tab, id, cardColor, checked_out) {
+		console.log(tab.metrics);
+		//request metrics
+		for(var i = 0; i < tab.metrics.length; i++) {
+			var metric = tab.metrics[i];
+
+			metricRequest(metric, checked_out, cardColor, function( data ) {
+				$("#" + id).html($("#" + id).html() + data); //append metric
+			});
+		}
+	}
+
+	//saves tab metrics locally
+	function saveTabs() {
+		var eurl = new URL(window.location.href);
+		var checkout_content = JSON.parse(JSON.parse(eurl.searchParams.get("checkout")).content);
+		var checkout = JSON.parse(eurl.searchParams.get("checkout"));
+
+		//update all tabs
+		for(var i = 0; i < checkout_content.team.tabs.length; i++) {
+			var tab_id = "#" + checkout_content.team.tabs[i].matchType;
+
+			//update metrics in tab
+			for(var j = 0; j < checkout_content.team.tabs[i].metrics.length; j++) {	
+				var metric_id = "#" + checkout_content.team.tabs[i].metrics[j].id;
+
+				checkout_content.team.tabs[i].metrics[j] = $(tab_id).find(metric_id).attr("metric"); //updae metric from metric div value
+			}
+
+		}
+
+
+		//save locally
+		var myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
+		//find editing checkout
+		for(var k = 0; k < myCheckouts.length; k++) {
+			if(myCheckouts[k].id == checkout.id) {
+				console.log(checkout_content);
+				myCheckouts[k].content = JSON.stringify(checkout_content);
+			}
+		}
+
+		localStorage.setItem("myCheckouts", JSON.stringify(myCheckouts));
+
+	}
+
+
+	//makes the proper metric request
+	function metricRequest(metric, checked_out, cardColor, callback) {
+		//RBoolean
+		if(metric.type == "RBoolean") {
+			$.ajax({
+				type: 'POST',
+				url: "cards/metrics/" + metric.type + ".php",
+				data: {
+					checked_out: checked_out,
+					metric: JSON.stringify(metric),
+					modified: metric.modified,
+					required: metric.required,
+					title: metric.title,
+					value: metric.value,
+					id: metric.id,
+					cardColor: cardColor
+				}
+			}).done(function ( data ) {
+				callback(data);
+			});
+		}
+		//RTextfield
+		if(metric.type == "RTextfield") {
+			$.ajax({
+				type: 'POST',
+				url: "cards/metrics/" + metric.type + ".php",
+				data: {
+					checked_out: checked_out,
+					metric: JSON.stringify(metric),
+					modified: metric.modified,
+					title: metric.title,
+					text: metric.text,
+					id: metric.id,
+					oneLine: metric.oneLine,
+					numericalOnly: metric.numericalOnly,
+					cardColor: cardColor
+				}
+			}).done(function ( data ) {
+				callback(data);
+			});
+		}
+		// //RCounter
+		// if(metric.type == "RCounter") {
+		// 	$.ajax({
+		// 		type: 'POST',
+		// 		url: "cards/metrics/" + metric.type + ".php",
+		// 		data: {
+		// 			checked_out: checked_out,
+		// 			metric: JSON.stringify(metric),
+		// 			modified: metric.modified,
+		// 			title: metric.title,
+		// 			textValue: metric.textValue,
+		// 			id: metric.id,
+		// 			increment: metric.increment,
+		// 			value: metric.value,
+		// 			cardColor: cardColor
+		// 		}
+		// 	}).done(function ( data ) {
+		// 		callback(data);
+		// 	});
+		// }
+	}
+
+
+
 </script>
 
- <!--Import jQuery before materialize.js-->
- <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
+<!--Import jQuery before materialize.js-->
+<script type="text/javascript" src="materialize/js/materialize.min.js"></script>
+ <!-- import metric_update_functions.js -->
+<script type="text/javascript" src="js/metric_update_functions.js"></script>
 </body>
 
 </html>
