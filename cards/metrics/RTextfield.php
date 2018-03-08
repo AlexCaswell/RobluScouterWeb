@@ -7,7 +7,6 @@ $title = $_POST['title'];
 $text = $_POST['text'];
 $id = $_POST['id'];
 $oneLine = $_POST['oneLine'];
-$numericalOnly = $_POST['numericalOnly'];
 $cardColor = $_POST['cardColor'];
 
 ?>
@@ -20,7 +19,7 @@ $cardColor = $_POST['cardColor'];
 				<?php
 				if($oneLine == 'true') {
 					echo '<div class="input-field col s6">
-			        	<input value="'.$text.'" style="color: #FFF;" id="text_'.$id.'" type="text" class="validate">
+			        	<input onkeyup="update_textfield('."'".$id."'".');" value="'.$text.'" style="color: #FFF;" id="text_'.$id.'" type="text" class="validate">
 			        </div>
 	         		<style type="text/css">
 			 			/* Change text input colors */
@@ -56,7 +55,7 @@ $cardColor = $_POST['cardColor'];
  				}
  				else {
 					echo '<div class="input-field col s6">
-			        	<textarea id="text_'.$id.'" class="materialize-textarea">'.$text.'</textarea>
+			        	<textarea onkeyup="update_textfield('."'".$id."'".');" id="text_'.$id.'" class="materialize-textarea">'.$text.'</textarea>
 			        </div>
 	         		<style type="text/css">
 			 			/* label focus color */
@@ -72,20 +71,6 @@ $cardColor = $_POST['cardColor'];
 	 				</style>';
  				}
  				?>
- 				<script type="text/javascript">
- 					if(<?php if($numericalOnly == "true") { echo true; } else { echo false; } ?>) {
- 						$("#text_<?php echo $id; ?>").keypress(function(e) {
-						    var a = [];
-						    var k = e.which;
-
-						    for (i = 48; i < 58; i++)
-						        a.push(i);
-
-						    if (!(a.indexOf(k)>=0))
-						        e.preventDefault();
-						});
- 					}
- 				</script>
 				<p  id="modified_<?php echo $id; ?>" style="font-size: 0.6em; color: #FFF; visibility: <?php if($modified == "true") { echo "hidden"; } else { echo "visible"; } ?>;">Not observed yet</p>
 				<br>
 			</div>

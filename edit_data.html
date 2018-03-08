@@ -21,13 +21,16 @@
       		<a href="index.html"><i class="material-icons" style="display: inline-block; z-index: 50px; margin-left: 10px; vertical-align: center;">arrow_back</i></a><a id="team_name" style="font-size: 1.6rem; margin-left: 35px;" class="brand-logo left"><br></a>
       		<a href="#" id="team_number" style="font-size: 1.1rem; margin-top: -20px; padding: 0 0 15px 55px; display: block; line-height: 1.1rem;"><br></a>
       		<!-- settings button and menu -->
-			<a href="#" id="settings_button" data-activates='settings_list' class="dropdown-button" style="position: absolute; top: 10px; right: 30px;"><i class="material-icons">settings</i></a>
-      		<ul style="margin-top: 20px; margin-right: 30px; background: #546E7A; min-width: 250px;" id="settings_list" class="dropdown-content"><style type="text/css">#settings_list li a { color: #FFF; }</style>
+			<a href="#" id="settings_button" data-activates='settings_list' onclick="setWonOptions();" class="dropdown-button" style="position: absolute; top: 10px; right: 30px;"><i class="material-icons">settings</i></a>
+      		<ul style="margin-top: 20px; margin-right: 30px; background: #546E7A; min-width: 250px;" id="settings_list" class="dropdown-content">
+      			<li id="mark_won"></li>
       		</ul>
+      		<style type="text/css">#settings_list li a { color: #FFF; }</style>
   		</div>
 
   		<!-- tab selector -->
 	    <div class="nav-content">
+	    	<div id="st"></div>
 	      <ul class="tabs tabs-transparent" id="tab_selectors">
 
 	      </ul>
@@ -52,6 +55,17 @@
 		$("nav").attr("style", $("nav").attr("style") + " background: " + primaryColor + " !important;");
 		$("body").attr("style", "background: " + backgroundColor + " !important;");
 		
+		//initialize settings dropdown
+		$('.dropdown-button').dropdown({
+			inDuration: 300,
+			outDuration: 225,
+			constrainWidth: false,
+			hover: false,
+			gutter: 0,
+			belowOrigin: true,
+			alignment: 'right',
+			stopPropagation: false
+		});
 
 		//Load checkout object
 		var eurl = new URL(window.location.href);
@@ -60,9 +74,13 @@
 		//get wheather checked out
 		var checked_out = eurl.searchParams.get("checked_out");
 
-		// //Set team name and number
+		// Set team name and number
 		$("#team_name").html(checkout_content.team.name);
 		$("#team_number").html("#" + checkout_content.team.number);
+
+		//limit won editability based on checked_out
+		if(checked_out == 'true') { $("#settings_button").attr("style", $("#settings_button").attr("style") + "pointer-events: auto;"); }
+		else { $("#settings_button").attr("style", $("#settings_button").attr("style") + "pointer-events: none;"); }
 
 		//load tabs with metrics
 		for(var i = 0; i < checkout_content.team.tabs.length; i++) {
@@ -71,13 +89,25 @@
 			var tab_title;
 			if(checkout_content.team.tabs[i].matchType == "PIT" || checkout_content.team.tabs[i].matchType == "PREDICTIONS") {
 				tab_title = checkout_content.team.tabs[i].matchType; // only show matchType if tab is of type pit or predictions
+
+				//limit won editability
+				$("#settings_button").attr("style", $("#settings_button").attr("style") + "pointer-events: none;");
 			} else {
 				tab_title = checkout_content.team.tabs[i].matchType + " " + checkout_content.team.tabs[i].matchOrder; // include matchOrder
 			}
+
+			var won_label = "";
+			if(checkout_content.team.tabs[i].won == 'true') { won_label = "<i style='font-size: 1.3em; display: inline;' class='material-icons'>star</i>"}
+
 			$("#tab_selectors").html($("#tab_selectors").html()
 				+ "<li class='tab'><a href='#"
-				+ checkout_content.team.tabs[i].matchType + "'>"
-				+ tab_title
+				+ checkout_content.team.tabs[i].matchType + "' id='ts_"
+				+ checkout_content.team.tabs[i].matchType + "' won='"
+				+ checkout_content.team.tabs[i].won + "' "
+			    + "onclick='updateAllianceColor(" + checkout_content.team.tabs[i].redAlliance + ");'"
+			    + "redAlliance='" + checkout_content.team.tabs[i].redAlliance + "' tab_title='" 
+			    + tab_title + "'>"
+				+ won_label + "  " + tab_title
 				+ "</a></li>"
 			);
 
@@ -92,8 +122,7 @@
 			loadMetrics(checkout_content.team.tabs[i], checkout_content.team.tabs[i].matchType, cardColor, checked_out);
 
 		}
-
-
+		updateAllianceColor(checkout_content.team.tabs[0].redAlliance);
 
 	});
 
@@ -105,10 +134,34 @@
 		//request metrics
 		for(var i = 0; i < tab.metrics.length; i++) {
 			var metric = tab.metrics[i];
-
-			metricRequest(metric, checked_out, cardColor, function( data ) {
+			metricRequest(tab.matchType, metric, checked_out, cardColor, function( data ) {
 				$("#" + id).html($("#" + id).html() + data); //append metric
 			});
+		}
+	}
+
+	//adds or removes the star that indicates wheather a match was won.
+	function setWon(won) {
+		var tab_id = $("#tab_selectors").find(".active").attr("id");
+		if(won == true) {
+			$("#" + tab_id).html("<i style='font-size: 1.3em; display: inline;' class='material-icons'>star</i>" + " " + $("#" + tab_id).attr("tab_title"));
+			$("#" + tab_id).attr("won", 'true');
+		} else {
+			$("#" + tab_id).html($("#" + tab_id).attr("tab_title"));
+			$("#" + tab_id).attr("won", 'false');
+		}
+
+		saveTabs();
+	}
+
+	//adds correct options to settings dropdown
+	function setWonOptions() {
+		if ($("#tab_selectors").find(".active").attr("won") == "true") {
+			$("#mark_won").attr("onclick", "setWon(false);");
+			$("#mark_won").html("<a>Mark as lost</a>");
+		} else {
+			$("#mark_won").attr("onclick", "setWon(true);");
+			$("#mark_won").html("<a>Mark as won</a>");
 		}
 	}
 
@@ -121,12 +174,15 @@
 		//update all tabs
 		for(var i = 0; i < checkout_content.team.tabs.length; i++) {
 			var tab_id = "#" + checkout_content.team.tabs[i].matchType;
+			//update tab won
+			if(!(tab_id == "#PIT" || tab_id == "#PREDICTIONS")) {
+				checkout_content.team.tabs[i].won = $("#ts_" + checkout_content.team.tabs[i].matchType).attr("won");
+			}
 
 			//update metrics in tab
 			for(var j = 0; j < checkout_content.team.tabs[i].metrics.length; j++) {	
-				var metric_id = "#" + checkout_content.team.tabs[i].metrics[j].id;
-
-				checkout_content.team.tabs[i].metrics[j] = $(tab_id).find(metric_id).attr("metric"); //updae metric from metric div value
+				var metric_id = "#" + checkout_content.team.tabs[i].matchType + checkout_content.team.tabs[i].metrics[j].id;
+				checkout_content.team.tabs[i].metrics[j] = JSON.parse($(tab_id).find(metric_id).attr("metric")); //updae metric from metric div value
 			}
 
 		}
@@ -137,7 +193,7 @@
 		//find editing checkout
 		for(var k = 0; k < myCheckouts.length; k++) {
 			if(myCheckouts[k].id == checkout.id) {
-				console.log(checkout_content);
+				// console.log(checkout_content);
 				myCheckouts[k].content = JSON.stringify(checkout_content);
 			}
 		}
@@ -148,7 +204,7 @@
 
 
 	//makes the proper metric request
-	function metricRequest(metric, checked_out, cardColor, callback) {
+	function metricRequest(tab_id, metric, checked_out, cardColor, callback) {
 		//RBoolean
 		if(metric.type == "RBoolean") {
 			$.ajax({
@@ -161,7 +217,7 @@
 					required: metric.required,
 					title: metric.title,
 					value: metric.value,
-					id: metric.id,
+					id: tab_id + metric.id,
 					cardColor: cardColor
 				}
 			}).done(function ( data ) {
@@ -169,7 +225,7 @@
 			});
 		}
 		//RTextfield
-		if(metric.type == "RTextfield") {
+		else if(metric.type == "RTextfield") {
 			$.ajax({
 				type: 'POST',
 				url: "cards/metrics/" + metric.type + ".php",
@@ -179,36 +235,61 @@
 					modified: metric.modified,
 					title: metric.title,
 					text: metric.text,
-					id: metric.id,
+					id: tab_id + metric.id,
 					oneLine: metric.oneLine,
-					numericalOnly: metric.numericalOnly,
+					// numericalOnly: metric.numericalOnly, (not currently supported)
+					cardColor: cardColor	
+				}
+			}).done(function ( data ) {
+				callback(data);
+			});
+		}
+		//RCounter
+		else if(metric.type == "RCounter") {
+			$.ajax({
+				type: 'POST',
+				url: "cards/metrics/" + metric.type + ".php",
+				data: {
+					checked_out: checked_out,
+					metric: JSON.stringify(metric),
+					modified: metric.modified,
+					title: metric.title,
+					id: tab_id + metric.id,
+					value: metric.value,
 					cardColor: cardColor
 				}
 			}).done(function ( data ) {
 				callback(data);
 			});
 		}
-		// //RCounter
-		// if(metric.type == "RCounter") {
-		// 	$.ajax({
-		// 		type: 'POST',
-		// 		url: "cards/metrics/" + metric.type + ".php",
-		// 		data: {
-		// 			checked_out: checked_out,
-		// 			metric: JSON.stringify(metric),
-		// 			modified: metric.modified,
-		// 			title: metric.title,
-		// 			textValue: metric.textValue,
-		// 			id: metric.id,
-		// 			increment: metric.increment,
-		// 			value: metric.value,
-		// 			cardColor: cardColor
-		// 		}
-		// 	}).done(function ( data ) {
-		// 		callback(data);
-		// 	});
-		// }
+		//RMetric
+		else {
+			$.ajax({
+				type: 'POST',
+				url: "cards/metrics/RMetric.php",
+				data: {
+					metric: JSON.stringify(metric),
+					type: metric.type,
+					title: metric.title,
+					id: tab_id + metric.id,
+					cardColor: cardColor
+				}
+			}).done(function ( data ) {
+				callback(data);
+			});
+		}
 	}
+
+	//changes nav bar color
+	function updateAllianceColor(redAlliance) {
+		if(redAlliance) {
+			$("nav").attr("style", $("nav").attr("style") + " background: " + "#D32F2F" + " !important;");
+		} else {
+			$("nav").attr("style", $("nav").attr("style") + " background: " + "#3F51B5" + " !important;");
+		}
+		
+"#D32F2F"
+	} 
 
 
 

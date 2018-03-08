@@ -233,7 +233,8 @@ function loadMyCheckouts() {
 
 	$("#my_checkouts").html("");
 
-	var myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
+	var myCheckouts = [];
+	if(localStorage.getItem("myCheckouts") != null) { myCheckouts = JSON.parse(localStorage.getItem("myCheckouts")) }
 	for(var i = 0; i < myCheckouts.length; i++) {
 		var myCheckout = myCheckouts[i];
 		var myCheckout_content = JSON.parse(myCheckouts[i].content);

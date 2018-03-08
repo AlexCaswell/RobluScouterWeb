@@ -16,11 +16,11 @@ $cardColor = $_POST['cardColor'];
 			<span style="color: #FFF;" class="card-title"><?php echo $title; ?></span>
 			<div style="pointer-events: <?php if($checked_out == "false") { echo "none"; } else { echo "auto"; } ?>; position: absolute; top: 20%; right: 30px;" metric='<?php echo $metric; ?>' id="<?php echo $id; ?>">
 				<p>
-					<input onclick="update_boolean(<?php echo $id; ?>)" name="tf_group_<?php echo $id; ?>" type="radio" id="true_<?php echo $id; ?>" <?php if($value == "true") { echo "checked"; } ?>/>
+					<input onclick="update_boolean(<?php echo "'".$id."'"; ?>)" name="tf_group_<?php echo $id; ?>" type="radio" id="true_<?php echo $id; ?>" <?php if($value == "true") { echo "checked"; } ?>/>
 					<label style="color: #FFF;" for="true_<?php echo $id; ?>">Yes</label>
 				</p>
 				<p>
-					<input onclick="update_boolean(<?php echo $id; ?>)" name="tf_group_<?php echo $id; ?>" type="radio" id="false_<?php echo $id; ?>" <?php if($value == "false") { echo "checked"; } ?>/>
+					<input onclick="update_boolean(<?php echo "'".$id."'"; ?>)" name="tf_group_<?php echo $id; ?>" type="radio" id="false_<?php echo $id; ?>" <?php if($value == "false") { echo "checked"; } ?>/>
 					<label style="color: #FFF;" for="false_<?php echo $id; ?>">No</label>
 				</p>
 				<p  id="modified_<?php echo $id; ?>" style="font-size: 0.6em; color: #FFF; visibility: <?php if($modified == "true") { echo "hidden"; } else { echo "visible"; } ?>;">Not observed yet</p>
