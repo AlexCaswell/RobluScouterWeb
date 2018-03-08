@@ -18,11 +18,11 @@
 <body>
  	<nav class="nav-extended" style="position: fixed; top: 0; left: 0; z-index: 1000;">
  		<div class="nav-wrapper">
-      		<a href="index.html"><i class="material-icons" style="display: inline-block; z-index: 50px; margin-left: 10px; vertical-align: center;">arrow_back</i></a><a id="team_name" style="font-size: 1.6rem; margin-left: 35px;" class="brand-logo left"><br></a>
+      		<a id="back" href="index.html"><i class="material-icons" style="display: inline-block; z-index: 50px; margin-left: 10px; vertical-align: center;">arrow_back</i></a><a id="team_name" style="font-size: 1.6rem; margin-left: 35px;" class="brand-logo left"><br></a>
       		<a href="#" id="team_number" style="font-size: 1.1rem; margin-top: -20px; padding: 0 0 15px 55px; display: block; line-height: 1.1rem;"><br></a>
       		<!-- settings button and menu -->
 			<a href="#" id="settings_button" data-activates='settings_list' onclick="setWonOptions();" class="dropdown-button" style="position: absolute; top: 10px; right: 30px;"><i class="material-icons">settings</i></a>
-      		<ul style="margin-top: 20px; margin-right: 30px; background: #546E7A; min-width: 250px;" id="settings_list" class="dropdown-content">
+      		<ul style="margin-top: 20px; margin-right: 30px; min-width: 250px;" id="settings_list" class="dropdown-content">
       			<li id="mark_won"></li>
       		</ul>
       		<style type="text/css">#settings_list li a { color: #FFF; }</style>
@@ -52,6 +52,7 @@
 		var backgroundColor = "#303030";
 
 		$(".card").attr("style", "background: " + cardColor + " !important;");
+		$("#settings_list").css("background", cardColor);
 		$("nav").attr("style", $("nav").attr("style") + " background: " + primaryColor + " !important;");
 		$("body").attr("style", "background: " + backgroundColor + " !important;");
 		
@@ -73,6 +74,9 @@
 
 		//get wheather checked out
 		var checked_out = eurl.searchParams.get("checked_out");
+
+		//set return tab
+		if(checked_out == "true") { $("#back").attr("href", "index.html?tab=myCheckouts"); }
 
 		// Set team name and number
 		$("#team_name").html(checkout_content.team.name);

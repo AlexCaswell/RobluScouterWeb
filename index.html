@@ -27,19 +27,19 @@
       		<ul style="margin-top: 20px; margin-right: 30px; background: #546E7A; min-width: 250px;" id="settings_list" class="dropdown-content"><style type="text/css">#settings_list li a { color: #FFF; }</style>
       			<li>
 					<a>
-						<input type="checkbox" onclick="loadCheckouts()" class="filled-in checkbox-color" id="show_pit_checkouts" checked="checked" />
+						<input type="checkbox" onclick="loadCheckouts(0, 30)" class="filled-in checkbox-color" id="show_pit_checkouts" checked="checked" />
 						<label style="color: #FFF;" for="show_pit_checkouts">Show pit checkouts</label>
 					</a>
       			</li>
       			<li>
 					<a>
-						<input type="checkbox" onclick="loadCheckouts()" class="filled-in checkbox-color" id="show_completed_checkouts" />
+						<input type="checkbox" onclick="loadCheckouts(0, 30)" class="filled-in checkbox-color" id="show_completed_checkouts" />
 						<label style="color: #FFF;" for="show_completed_checkouts">Show completed</label>
 					</a>
       			</li>
       			<li>
 					<a>
-						<input type="checkbox" onclick="loadCheckouts()" class="filled-in checkbox-color" id="show_checked_out" />
+						<input type="checkbox" onclick="loadCheckouts(0, 30)" class="filled-in checkbox-color" id="show_checked_out" />
 						<label style="color: #FFF;" for="show_checked_out">Show checked out</label>
 					</a>
       			</li>
@@ -59,8 +59,8 @@
   		<!-- tab selector -->
 	    <div class="nav-content">
 	      <ul class="tabs tabs-transparent">
-	        <li class="tab"><a href="#my_checkouts">My Checkouts</a></li>
-	        <li class="tab"><a class="active" href="#checkouts">Checkouts</a></li>
+	        <li class="tab"><a id="mc_a" href="#my_checkouts">My Checkouts</a></li>
+	        <li class="tab"><a id="c_a" class="active" href="#checkouts">Checkouts</a></li>
 	      </ul>
 	    </div>
  	</nav><br><br><br><br><br><br>
@@ -82,6 +82,12 @@
 
 	$(document).ready(function() {
 
+
+		//set correct tab to active
+		var eurl = new URL(window.location.href);
+		if (eurl.searchParams.get("tab") == "myCheckouts") {
+			$("#mc_a").attr("class", "active");
+		}
 
 		// Make sure browser is compatible with settings storage method (localStorage)
 		if(typeof(Storage) === "undefined") {
@@ -121,10 +127,10 @@
 		}
 		$("#title").text(title);
 
-		loadCheckouts();
-		loadMyCheckouts();
+		loadCheckouts(0, 30);
+		loadMyCheckouts(0, 30);
 
-
+		autoCheckout();
  	});
 
 </script>
@@ -132,10 +138,12 @@
 <script type="text/javascript">
 
 // loads checkouts from the server into the checkouts div
-function loadCheckouts() {
+function loadCheckouts(start, limit) {
 
 	//Clear checkouts div
-	$("#checkouts").html("");
+	if(start == 0) {
+		$("#checkouts").html("");
+	}
 
 	//Get settings from checkboxes
 	var show_pit_checkouts = $("#show_pit_checkouts").is(':checked');
@@ -145,41 +153,100 @@ function loadCheckouts() {
 	//load checkouts from server into checkouts div
 
 	getCheckouts(show_pit_checkouts, show_completed_checkouts, show_checked_out, localStorage.getItem("autoCheckoutMode"), function( checkouts ) {
-		for(var i = 0; i < checkouts.length; i++) {
-			var checkout = checkouts[i];
-			var checkout_content = JSON.parse(checkouts[i].content);
 
-			var status;
-			if(checkout.status == 0 || checkout.status == -1) {
-				status = "Available";
-			}
-			if (checkout.status == 1) {
-				status = "Checked out to " + checkout_content.nameTag;
-			}
-			if (checkout.status == 2) {
-				status = "Completed"
-			}
+		if(limit >= checkouts.length) { limit = checkouts.length; }
 
-			$.ajax({
-				type: 'POST',
-				data: {
-					team: checkout_content.team.name,
-					type: checkout_content.team.tabs[0].matchType,
-					match_order: checkout_content.team.tabs[0].matchOrder,
-					card_color: cardColor,
-					available: status,
-					onclick: "openCheckout(" + checkout.id + ", false);",
-					checked_out: 0,
-					checkout: JSON.stringify(checkout),
-					id: checkout.id
-				},
-				url: 'cards/get_checkout.php'
-			}).done( function(data) {
+		for(var i = start; i <= limit; i++) {
+
+			st = i;
+			if (st == limit) { st--; }//so the load_more request has valid data
+
+
+			if(!(i == limit && limit == checkouts.length)) {
+				var checkout = checkouts[st];
+				var checkout_content = JSON.parse(checkouts[st].content);
+
+				var status;
+				if(checkout.status == 0 || checkout.status == -1) {
+					status = "Available";
+				}
+				if (checkout.status == 1) {
+					status = "Checked out to " + checkout_content.nameTag;
+				}
+				if (checkout.status == 2) {
+					status = "Completed"
+				}
+				$.ajax({
+					type: 'POST',
+					data: {
+						team: checkout_content.team.name,
+						type: checkout_content.team.tabs[0].matchType,
+						match_order: checkout_content.team.tabs[0].matchOrder,
+						card_color: cardColor,
+						available: status,
+						onclick: "openCheckout(" + checkout.id + ", false);",
+						checked_out: 0,
+						checkout: JSON.stringify(checkout),
+						id: checkout.id,
+						last: i == limit,
+						limit: limit
+					},
+					url: 'cards/get_checkout.php'
+				}).done( function(data) {
 					$("#checkouts").html($("#checkouts").html() + data);
-			});
+				});
+			}
 		}
 	});
+}
 
+
+//adds all checkouts with the matching device role to myCheckouts (must be run after checkouts are loaded into the page)
+function autoCheckout() {
+	if(localStorage.getItem("autoCheckoutMode") != '0') {
+		//remove old device role checkouts if device role has changed
+		if(localStorage.getItem("autoCheckoutModeTemp") != localStorage.getItem("autoCheckoutMode")) {
+			localStorage.removeItem("myCheckouts");
+			localStorage.setItem("autoCheckoutModeTemp", localStorage.getItem("autoCheckoutMode"));
+		}
+		getCheckouts(true, false, false, localStorage.getItem("autoCheckoutMode"), function( checkouts ) {
+			for(var i = 0; i < checkouts.length; i++) {
+				//load myCheckouts array
+				var my_checkouts = [];
+				if(localStorage.getItem("myCheckouts") === null) {
+					localStorage.setItem("myCheckouts", JSON.stringify(my_checkouts));
+				}else {
+					my_checkouts = JSON.parse(localStorage.getItem("myCheckouts"));
+				}
+
+				//make sure checkout is not already checked out
+				var available = false;
+				var unique = false;
+				var j = 0;
+				do {
+					if(my_checkouts.length == 0) {
+						unique = true;
+					}else if(checkouts[i].id != my_checkouts[j].id) {
+						unique = true;
+					}else {
+						unique = false; break;
+					}
+					j++;
+				}while(j < my_checkouts.length);
+
+				if(!unique || checkouts[i].status == 1 ||  checkouts[i].status == 2) { available = false; } else { available = true; }
+
+				if(available) {
+					//add checkout to array
+					my_checkouts[my_checkouts.length] = checkouts[i];
+
+					//serialize and store array
+					localStorage.setItem("myCheckouts", JSON.stringify(my_checkouts));
+				}
+			}
+			loadMyCheckouts(0, 30);
+		});
+	}
 }
 
 //opens checkout in edit_data.html
@@ -208,18 +275,30 @@ function checkout(id) {
 	var myCheckout = JSON.parse($("#" + id).attr("checkout"));
 
 	//make sure checkout is not already checked out
-	var unique = true;
-	for(var i = 0; i < myCheckouts.length; i++) {
-		if(myCheckout.id == myCheckouts[i].id) { unique = false; }
-	}
+	var available = false;
+	var unique = false;
+	var j = 0;
+	do {
+		if(myCheckouts.length == 0) {
+			unique = true;
+		}else if(myCheckout.id != myCheckouts[j].id) {
+			unique = true;
+		}else {
+			unique = false; break;
+		}
+		j++;
+	}while(j < myCheckouts.length);
 
-	if (unique) {
+	if(!unique || myCheckout.status == 1 ||  myCheckout.status == 2) { available = false; } else { available = true; }
+
+	if (available) {
 		//add checkout to array
 		myCheckouts[myCheckouts.length] = myCheckout;
 
 		//serialize and store array
 		localStorage.setItem("myCheckouts", JSON.stringify(myCheckouts));
 
+		//notify
 		var myCheckout_content = JSON.parse(myCheckout.content);
 		Materialize.toast(myCheckout_content.team.name + " " + myCheckout_content.team.tabs[0].matchType + " " + myCheckout_content.team.tabs[0].matchOrder + " has been checked out to " + localStorage.getItem("username"), 2500);
 	}else {
@@ -229,33 +308,47 @@ function checkout(id) {
 }
 
 //loads myCheckouts localStorage item into my_checkouts div
-function loadMyCheckouts() {
-
-	$("#my_checkouts").html("");
+function loadMyCheckouts(start, limit) {
+	if(start == 0) {
+		$("#my_checkouts").html("");
+	}
 
 	var myCheckouts = [];
 	if(localStorage.getItem("myCheckouts") != null) { myCheckouts = JSON.parse(localStorage.getItem("myCheckouts")) }
-	for(var i = 0; i < myCheckouts.length; i++) {
-		var myCheckout = myCheckouts[i];
-		var myCheckout_content = JSON.parse(myCheckouts[i].content);
 
-		$.ajax({
-			type: 'POST',
-			data: {
-				team: myCheckout_content.team.name,
-				type: myCheckout_content.team.tabs[0].matchType,
-				match_order: myCheckout_content.team.tabs[0].matchOrder,
-				card_color: cardColor,
-				available: "Checked out to " + localStorage.getItem("username"),
-				onclick: "openCheckout(" + myCheckout.id + ", true);",
-				checked_out: 1,
-				checkout: JSON.stringify(myCheckout),
-				id: myCheckout.id
-			},
-			url: 'cards/get_checkout.php'
-		}).done( function(data) {
-				$("#my_checkouts").html($("#my_checkouts").html() + data);
-		});
+	if(limit >= myCheckouts.length) { limit = myCheckouts.length; }
+
+	var st = 0;
+	for(var i = start; i <= limit; i++) {
+
+		st = i;
+		if (st == limit) { st--; }//so the load_more request has valid data
+
+		//check if there are checkouts to be loaded on last iteration
+		if(!(i == limit && limit == myCheckouts.length)) {
+			var myCheckout = myCheckouts[st];
+			var myCheckout_content = JSON.parse(myCheckouts[st].content);
+
+			$.ajax({
+				type: 'POST',
+				data: {
+					team: myCheckout_content.team.name,
+					type: myCheckout_content.team.tabs[0].matchType,
+					match_order: myCheckout_content.team.tabs[0].matchOrder,
+					card_color: cardColor,
+					available: "Checked out to " + localStorage.getItem("username"),
+					onclick: "openCheckout(" + myCheckout.id + ", true);",
+					checked_out: 1,
+					checkout: JSON.stringify(myCheckout),
+					id: myCheckout.id,
+					last: i == limit,
+					limit: limit
+				},
+				url: 'cards/get_checkout.php'
+			}).done( function(data) {
+					$("#my_checkouts").html($("#my_checkouts").html() + data);
+			});
+		}
 	}
 }
 
