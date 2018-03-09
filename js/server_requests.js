@@ -26,9 +26,9 @@ function getTeamModel(callback) {
 }
 
 
-		// type: 'GET',
-		// url: "http://" + localStorage.getItem("serverIp") + "/checkouts/pullCheckouts",
-		// data: { code: localStorage.getItem("teamCode"), time: Math.round((new Date()).getTime() / 1000) }
+// type: 'GET',
+// url: "http://" + localStorage.getItem("serverIp") + "/checkouts/pullCheckouts",
+// data: { code: localStorage.getItem("teamCode"), time: Math.round((new Date()).getTime() / 1000) }
 
 
 // returns array of all checkouts filtered by options
@@ -96,9 +96,9 @@ function getCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut, 
 }
 
 
-// uploads array of checkout model objects
+// uploads array of checkout-model objects
 function pushCheckouts(checkouts) {
-
+	
 }
 
 

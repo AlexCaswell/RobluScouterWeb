@@ -128,7 +128,6 @@
 		$("#title").text(title);
 
 		loadCheckouts(0, 30);
-		loadMyCheckouts(0, 30);
 
 		autoCheckout();
  	});
@@ -152,7 +151,7 @@ function loadCheckouts(start, limit) {
 
 	//load checkouts from server into checkouts div
 
-	getCheckouts(show_pit_checkouts, show_completed_checkouts, show_checked_out, localStorage.getItem("autoCheckoutMode"), function( checkouts ) {
+	getCheckouts(show_pit_checkouts, show_completed_checkouts, show_checked_out, '0', function( checkouts ) {
 
 		if(limit >= checkouts.length) { limit = checkouts.length; }
 
@@ -234,7 +233,8 @@ function autoCheckout() {
 					j++;
 				}while(j < my_checkouts.length);
 
-				if(!unique || checkouts[i].status == 1 ||  checkouts[i].status == 2) { available = false; } else { available = true; }
+				// if(!unique || checkouts[i].status == 1 ||  checkouts[i].status == 2) { available = false; } else { available = true; }
+				if(!unique) { available = false; } else { available = true; }
 
 				if(available) {
 					//add checkout to array
@@ -244,10 +244,51 @@ function autoCheckout() {
 					localStorage.setItem("myCheckouts", JSON.stringify(my_checkouts));
 				}
 			}
-			loadMyCheckouts(0, 30);
 		});
 	}
+	loadMyCheckouts(0, 30);
 }
+
+//upload a single checkout with status 2
+function completeCheckout(id) {
+	var checkout = JSON.parse($("#my_checkouts").find(".card").find(".card-content").find("#" + id).attr("checkout"));
+	$("#my_checkouts").find(".card").find(".card-content").find("#" + id).parent().parent().css("display", "none");
+
+	var myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
+	var ck_index;
+	//find checkout index in myCheckouts storage
+	for(var i = 0; i < myCheckouts.length; i++) {
+		if(myCheckouts[i].id == checkout.id) {
+			ck_index = i;
+			break;
+		}
+	}
+
+	//remove from array
+	myCheckouts.splice(ck_index, 1);
+
+	/*
+	TODO:
+		write pushCheckouts()
+		finish mymatches
+		load ui from server
+	*/
+
+	//store in localStorage
+	localStorage.setItem("myCheckouts", JSON.stringify(myCheckouts));
+
+	checkout.status = 2;
+	checkouts = [checkout];
+	Materialize.toast("Checkout completed.", 2500);
+	// uploadCheckouts(checkouts);
+}
+
+//uploads all checkouts in myCheckouts
+function uploadMyCheckouts() {
+	var myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
+	// uploadCheckouts(myCheckouts);
+}
+
 
 //opens checkout in edit_data.html
 function openCheckout(id, ck_out) {
@@ -289,10 +330,15 @@ function checkout(id) {
 		j++;
 	}while(j < myCheckouts.length);
 
-	if(!unique || myCheckout.status == 1 ||  myCheckout.status == 2) { available = false; } else { available = true; }
+	// if(!unique || myCheckout.status == 1 ||  myCheckout.status == 2) { available = false; } else { available = true; }
+	if(!unique) { available = false; } else { available = true; }
 
 	if (available) {
-		//add checkout to array
+		//add checkout to array with updated status and name tag
+		myCheckout.status = 1;
+		myCheckoutContent = JSON.parse(myCheckout.content);
+		myCheckoutContent.nameTag = localStorage.getItem("username");
+		myCheckout.content = JSON.stringify(myCheckoutContent);
 		myCheckouts[myCheckouts.length] = myCheckout;
 
 		//serialize and store array

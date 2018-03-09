@@ -19,16 +19,19 @@ $limit = $limit + 30;
 
 <?php
 
+	//get title
 	if($type != "PIT") {
 		$type = $type." ".$match_order;
 	}
 
+	//get icon
 	if($checked_out == 1) {
 		$icon = "cloud_upload";
 	}else {
 		$icon = "add";
 	}
 
+	//get load_more function
 	if($checked_out == 1) {
 		$load_function = 'loadMyCheckouts('.$start.', '.$limit.'); $(".lm_mycheckouts").css("display", "none");';
 		$lm_class = "lm_mycheckouts";
@@ -36,6 +39,14 @@ $limit = $limit + 30;
 		$load_function = 'loadCheckouts('.$start.', '.$limit.'); $(".lm_checkouts").css("display", "none");';
 		$lm_class = "lm_checkouts";
 	}
+
+	//get upload/add function
+	if($checked_out == 1) {
+		$ua_function = 'completeCheckout('.$id.');';
+	} else {
+		$ua_function = 'checkout('.$id.'); loadMyCheckouts(0, 30);';
+	}
+
 
 	$checkout = 
 	'
@@ -46,7 +57,7 @@ $limit = $limit + 30;
 					<p style="color: #FFF;">'.$type.'</p>
 					<p style="color: #FFF;">'.$available.'</p>
 				</div>
-				<a style="background: #2A2A2A; position: absolute; bottom: 10px; right: 10px;" onclick="checkout('.$id.'); loadMyCheckouts(0, 30);" class="btn-floating btn-large waves-effect waves-light"><i class="material-icons">'.$icon.'
+				<a style="background: #2A2A2A; position: absolute; bottom: 10px; right: 10px;" onclick="'.$ua_function.'" class="btn-floating btn-large waves-effect waves-light"><i class="material-icons">'.$icon.'
 				</i></a>
 			</div>
 		</div>

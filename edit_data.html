@@ -101,7 +101,7 @@
 			}
 
 			var won_label = "";
-			if(checkout_content.team.tabs[i].won == 'true') { won_label = "<i style='font-size: 1.3em; display: inline;' class='material-icons'>star</i>"}
+			if(checkout_content.team.tabs[i].won == "true") { won_label = "<i style='font-size: 1.3em; display: inline;' class='material-icons'>star</i>"}
 
 			$("#tab_selectors").html($("#tab_selectors").html()
 				+ "<li class='tab'><a href='#"
@@ -148,7 +148,7 @@
 	function setWon(won) {
 		var tab_id = $("#tab_selectors").find(".active").attr("id");
 		if(won == true) {
-			$("#" + tab_id).html("<i style='font-size: 1.3em; display: inline;' class='material-icons'>star</i>" + " " + $("#" + tab_id).attr("tab_title"));
+			$("#" + tab_id).html("<i style='font-size: 1.3em; display: inline;' class='material-icons'>star</i>" + "  " + $("#" + tab_id).attr("tab_title"));
 			$("#" + tab_id).attr("won", 'true');
 		} else {
 			$("#" + tab_id).html($("#" + tab_id).attr("tab_title"));
