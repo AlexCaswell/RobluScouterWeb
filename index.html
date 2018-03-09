@@ -127,9 +127,9 @@
 		}
 		$("#title").text(title);
 
-		loadCheckouts(0, 30);
-
-		autoCheckout();
+		loadCheckouts(0, 30); //load main checkouts from server
+		autoCheckout(); //add checkouts with matching autoCheckoutMode to myCheckouts localStorage item
+		loadMyCheckouts(0, 30); //load checkouts from myCheckouts localStorage item into my_checkous div
  	});
 
 </script>
@@ -203,50 +203,51 @@ function loadCheckouts(start, limit) {
 //adds all checkouts with the matching device role to myCheckouts (must be run after checkouts are loaded into the page)
 function autoCheckout() {
 	if(localStorage.getItem("autoCheckoutMode") != '0') {
-		//remove old device role checkouts if device role has changed
 		if(localStorage.getItem("autoCheckoutModeTemp") != localStorage.getItem("autoCheckoutMode")) {
+
+			//remove old device role checkouts
 			localStorage.removeItem("myCheckouts");
 			localStorage.setItem("autoCheckoutModeTemp", localStorage.getItem("autoCheckoutMode"));
-		}
-		getCheckouts(true, false, false, localStorage.getItem("autoCheckoutMode"), function( checkouts ) {
-			for(var i = 0; i < checkouts.length; i++) {
-				//load myCheckouts array
-				var my_checkouts = [];
-				if(localStorage.getItem("myCheckouts") === null) {
-					localStorage.setItem("myCheckouts", JSON.stringify(my_checkouts));
-				}else {
-					my_checkouts = JSON.parse(localStorage.getItem("myCheckouts"));
-				}
-
-				//make sure checkout is not already checked out
-				var available = false;
-				var unique = false;
-				var j = 0;
-				do {
-					if(my_checkouts.length == 0) {
-						unique = true;
-					}else if(checkouts[i].id != my_checkouts[j].id) {
-						unique = true;
+		
+			getCheckouts(true, true, true, localStorage.getItem("autoCheckoutMode"), function( checkouts ) {
+				for(var i = 0; i < checkouts.length; i++) {
+					//load myCheckouts array
+					var my_checkouts = [];
+					if(localStorage.getItem("myCheckouts") === null) {
+						localStorage.setItem("myCheckouts", JSON.stringify(my_checkouts));
 					}else {
-						unique = false; break;
+						my_checkouts = JSON.parse(localStorage.getItem("myCheckouts"));
 					}
-					j++;
-				}while(j < my_checkouts.length);
 
-				// if(!unique || checkouts[i].status == 1 ||  checkouts[i].status == 2) { available = false; } else { available = true; }
-				if(!unique) { available = false; } else { available = true; }
+					//make sure checkout is not already checked out
+					var available = false;
+					var unique = false;
+					var j = 0;
+					do {
+						if(my_checkouts.length == 0) {
+							unique = true;
+						}else if(checkouts[i].id != my_checkouts[j].id) {
+							unique = true;
+						}else {
+							unique = false; break;
+						}
+						j++;
+					}while(j < my_checkouts.length);
 
-				if(available) {
-					//add checkout to array
-					my_checkouts[my_checkouts.length] = checkouts[i];
+					// if(!unique || checkouts[i].status == 1 ||  checkouts[i].status == 2) { available = false; } else { available = true; }
+					if(!unique) { available = false; } else { available = true; }
 
-					//serialize and store array
-					localStorage.setItem("myCheckouts", JSON.stringify(my_checkouts));
+					if(available) {
+						//add checkout to array
+						my_checkouts[my_checkouts.length] = checkouts[i];
+
+						//serialize and store array
+						localStorage.setItem("myCheckouts", JSON.stringify(my_checkouts));
+					}
 				}
-			}
-		});
+			});
+		}
 	}
-	loadMyCheckouts(0, 30);
 }
 
 //upload a single checkout with status 2
@@ -269,6 +270,7 @@ function completeCheckout(id) {
 
 	/*
 	TODO:
+		autocheckout after checkout completed
 		write pushCheckouts()
 		finish mymatches
 		load ui from server

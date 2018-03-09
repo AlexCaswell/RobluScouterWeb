@@ -80,9 +80,9 @@ function getCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut, 
 	    	// Filter pit checkouts
 	    	if(!showPitCheckouts && checkout_content.team.tabs[0].matchType == "PIT") { continue; }
 	    	// Filter comleted checkouts
-	    	if(!showCompletedCheckouts && checkout.status == 3) { continue; }
+	    	if(!showCompletedCheckouts && checkout.status == 2) { continue; }
 	    	// Filter checked out
-	    	if(!showCheckedOut && checkout.status == 2) { continue; }
+	    	if(!showCheckedOut && checkout.status == 1) { continue; }
 
     		sorted_checkouts_dc[index] = checkout;
     		index++;
@@ -98,7 +98,7 @@ function getCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut, 
 
 // uploads array of checkout-model objects
 function pushCheckouts(checkouts) {
-	
+
 }
 
 
