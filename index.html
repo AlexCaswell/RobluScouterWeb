@@ -33,17 +33,16 @@
       			</li>
       			<li>
 					<a>
-						<input type="checkbox" onclick="loadCheckouts(0, 30)" class="filled-in checkbox-color" id="show_completed_checkouts" />
+						<input type="checkbox" onclick="loadCheckouts(0, 30)" class="filled-in checkbox-color" id="show_completed_checkouts" checked="checked"/>
 						<label style="color: #FFF;" for="show_completed_checkouts">Show completed</label>
 					</a>
       			</li>
       			<li>
 					<a>
-						<input type="checkbox" onclick="loadCheckouts(0, 30)" class="filled-in checkbox-color" id="show_checked_out" />
+						<input type="checkbox" onclick="loadCheckouts(0, 30)" class="filled-in checkbox-color" id="show_checked_out" checked="checked"/>
 						<label style="color: #FFF;" for="show_checked_out">Show checked out</label>
 					</a>
       			</li>
-      			<li><a id="my_matches" href="mymatches.html">My matches</a></li>
       			<li><a id="settings" href="settings.html">Settings</a></li>
       		</ul>
       		<!-- change textbox color -->
@@ -202,12 +201,13 @@ function loadCheckouts(start, limit) {
 
 //adds all checkouts with the matching device role to myCheckouts (must be run after checkouts are loaded into the page)
 function autoCheckout() {
-	if(localStorage.getItem("autoCheckoutMode") != '0') {
-		if(localStorage.getItem("autoCheckoutModeTemp") != localStorage.getItem("autoCheckoutMode")) {
+	if(localStorage.getItem("autoCheckoutModeTemp") != localStorage.getItem("autoCheckoutMode")) {
 
-			//remove old device role checkouts
-			localStorage.removeItem("myCheckouts");
-			localStorage.setItem("autoCheckoutModeTemp", localStorage.getItem("autoCheckoutMode"));
+		//remove old device role checkouts
+		localStorage.removeItem("myCheckouts");
+		localStorage.setItem("autoCheckoutModeTemp", localStorage.getItem("autoCheckoutMode"));
+
+		if(localStorage.getItem("autoCheckoutMode") != '0') {
 		
 			getCheckouts(true, true, true, localStorage.getItem("autoCheckoutMode"), function( checkouts ) {
 				for(var i = 0; i < checkouts.length; i++) {
@@ -238,6 +238,8 @@ function autoCheckout() {
 					if(!unique) { available = false; } else { available = true; }
 
 					if(available) {
+						//update status
+						checkouts[i].status = 1;
 						//add checkout to array
 						my_checkouts[my_checkouts.length] = checkouts[i];
 
@@ -245,6 +247,8 @@ function autoCheckout() {
 						localStorage.setItem("myCheckouts", JSON.stringify(my_checkouts));
 					}
 				}
+				loadMyCheckouts(0, 30); //refresh html
+				uploadMyCheckouts(); //sync status' with server
 			});
 		}
 	}
@@ -270,9 +274,7 @@ function completeCheckout(id) {
 
 	/*
 	TODO:
-		autocheckout after checkout completed
 		write pushCheckouts()
-		finish mymatches
 		load ui from server
 	*/
 
@@ -282,12 +284,14 @@ function completeCheckout(id) {
 	checkout.status = 2;
 	checkouts = [checkout];
 	Materialize.toast("Checkout completed.", 2500);
+	console.log(checkouts);
 	// uploadCheckouts(checkouts);
 }
 
 //uploads all checkouts in myCheckouts
 function uploadMyCheckouts() {
 	var myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
+	console.log(myCheckouts);
 	// uploadCheckouts(myCheckouts);
 }
 

@@ -21,62 +21,7 @@
       		<a href="index.html"><i class="material-icons" style="display: inline-block; z-index: 50px; margin-left: 10px; vertical-align: center;">arrow_back</i></a><a style="font-size: 1.6rem; margin-left: 40px;" class="brand-logo left">My matches</a>
   		</div>
  	</nav><br><br><br><br>
- 	<div style="margin: 0 3% 0 3%;">
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 		<div class="card blue-grey darken-1">
- 			<div class="card-content white-text">
- 				<span class="card-title">Card title</span>
- 				<p>
-				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
- 				tempor incididunt ut labore et dolore magna aliqua.
- 				</p>
- 			</div>
- 		</div>
- 	</div>
+ 	<div style="margin: 0 3% 0 3%;" id="#my_matches"></div>
 
 <!-- Ui initializations -->
 <script type="text/javascript">
@@ -93,11 +38,24 @@
 		$("nav").attr("style", $("nav").attr("style") + " background: " + primaryColor + " !important;");
 		$("body").attr("style", "background: " + backgroundColor + " !important;");
 		
+		//find all checkouts matching the team and display them in my_checkouts div
+		getTeamModel( function (data) {
+			var team_name = data.official_team_name;
+			var team_number = data.number;
+			getCheckouts(false, true, true, 0, function( checkouts ) {
+				for(var i = 0; i < checkouts.length; i++) {
+					if(chekcouts[i].)
+				}
+			});
+		});
+
 	});
 </script>
 
  <!--Import jQuery before materialize.js-->
  <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
+<!-- import server_request.js -->
+<script type="text/javascript" src="js/server_requests.js"></script>
 </body>
 
 </html>
