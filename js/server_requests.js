@@ -26,16 +26,14 @@ function getTeamModel(callback) {
 }
 
 
-// type: 'GET',
-// url: "http://" + localStorage.getItem("serverIp") + "/checkouts/pullCheckouts",
-// data: { code: localStorage.getItem("teamCode"), time: Math.round((new Date()).getTime() / 1000) }
 
 
 // returns array of all checkouts filtered by options
 function getCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut, deviceRole, callback) {
 	$.ajax({
 		type: 'GET',
-		url: "checkout_request.json",
+		url: "http://" + localStorage.getItem("serverIp") + "/checkouts/pullCheckouts",
+		data: { code: localStorage.getItem("teamCode"), pullAll: 'true' },
 	}).done( function ( data ) {
 
 	    // filter checkouts by device role
