@@ -33,7 +33,7 @@ function getCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut, 
 	$.ajax({
 		type: 'GET',
 		url: "http://" + localStorage.getItem("serverIp") + "/checkouts/pullCheckouts",
-		data: { code: localStorage.getItem("teamCode"), pullAll: 'true' },
+		data: { code: localStorage.getItem("teamCode"), pullAll: true }
 	}).done( function ( data ) {
 
 	    // filter checkouts by device role
@@ -96,7 +96,12 @@ function getCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut, 
 
 // uploads array of checkout-model objects
 function pushCheckouts(checkouts) {
-
+	$.ajax({
+		type: 'POST',
+		url: "http://" + localStorage.getItem("serverIp") + "/checkouts/pushCheckouts",
+		data: { code: localStorage.getItem("teamCode"), content: JSON.stringify(checkouts) }
+	}).done( function (data) {
+		console.log(data);
+	});
 }
-
 

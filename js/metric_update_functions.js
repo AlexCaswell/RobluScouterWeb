@@ -4,7 +4,6 @@
 //RBoolean
 function update_boolean(id) {
 	//get value of yes/no radio group
-	console.log(id);
 	if($("#true_" + id).is(":checked")) {
 		var state = "true";
 	} else {

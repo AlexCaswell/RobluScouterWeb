@@ -240,6 +240,10 @@ function autoCheckout() {
 					if(available) {
 						//update status
 						checkouts[i].status = 1;
+						var ck_content = JSON.parse(checkouts[i].content);
+						ck_content.status = 1;
+						checkouts[i].content = JSON.stringify(ck_content);
+						checkouts[i].nameTag = localStorage.getItem("username");
 						//add checkout to array
 						my_checkouts[my_checkouts.length] = checkouts[i];
 
@@ -272,39 +276,40 @@ function completeCheckout(id) {
 	//remove from array
 	myCheckouts.splice(ck_index, 1);
 
-	/*
-	TODO:
-		write pushCheckouts()
-		load ui from server
-	*/
-
 	//store in localStorage
 	localStorage.setItem("myCheckouts", JSON.stringify(myCheckouts));
 
 	checkout.status = 2;
 	checkouts = [checkout];
 	Materialize.toast("Checkout completed.", 2500);
-	console.log(checkouts);
-	// uploadCheckouts(checkouts);
+	pushCheckouts(checkouts);
 }
 
 //uploads all checkouts in myCheckouts
 function uploadMyCheckouts() {
 	var myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
-	console.log(myCheckouts);
-	// uploadCheckouts(myCheckouts);
+	if(myCheckouts.length != 0) {
+		pushCheckouts(myCheckouts);
+	}
 }
 
 
-//opens checkout in edit_data.html
+//opens checkout in edit_data.php
 function openCheckout(id, ck_out) {
-	if(ck_out == true) {
-		var req_url = "edit_data.html?checkout=" + $("#my_checkouts").find("#" + id).attr("checkout") + "&checked_out=" + ck_out;
+
+	var url = 'edit_data.php';
+	if(ck_out == 'true') {
+		var checkout = $("#my_checkouts").find("#" + id).attr("checkout");
 	} else {
-		var req_url = "edit_data.html?checkout=" + $("#checkouts").find("#" + id).attr("checkout") + "&checked_out=" + ck_out;
+		var checkout = $("#checkouts").find("#" + id).attr("checkout");
 	}
 
-	window.location.replace(req_url);
+	var form = $('<form style="display: none;" action="' + url + '" method="post">' +
+	  "<input type='text' name='checkout' value='" + JSON.stringify(checkout) + "' />" +
+	  '<input type="text" name="checked_out" value="' + ck_out + '" />' +
+	  '</form>');
+	$('body').append(form);
+	form.submit();
 }
 
 //adds checkout to myCheckouts localStorage item
@@ -344,6 +349,7 @@ function checkout(id) {
 		myCheckout.status = 1;
 		myCheckoutContent = JSON.parse(myCheckout.content);
 		myCheckoutContent.nameTag = localStorage.getItem("username");
+		myCheckoutContent.status = 1;
 		myCheckout.content = JSON.stringify(myCheckoutContent);
 		myCheckouts[myCheckouts.length] = myCheckout;
 
@@ -356,6 +362,8 @@ function checkout(id) {
 	}else {
 		Materialize.toast("Already checked out", 2500);
 	}
+
+	uploadMyCheckouts();//sync status' with the server
 
 }
 

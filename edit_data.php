@@ -69,17 +69,27 @@
 		});
 
 		//Load checkout object
-		var eurl = new URL(window.location.href);
-		var checkout_content = JSON.parse(JSON.parse(eurl.searchParams.get("checkout")).content);
+		var checkout_content = JSON.parse(JSON.parse(<?php echo $_POST['checkout']; ?>).content);
 
 		//get wheather checked out
-		var checked_out = eurl.searchParams.get("checked_out");
+		var checked_out = '<?php echo $_POST['checked_out']; ?>';
 
 		//set return tab
 		if(checked_out == "true") { $("#back").attr("href", "index.html?tab=myCheckouts"); }
 
 		// Set team name and number
-		$("#team_name").html(checkout_content.team.name);
+		//limit team name length
+		var name_charr = checkout_content.team.name.split('');
+		if(name_charr.length < 25) {
+			var name = checkout_content.team.name;
+		}else {
+			for(var i = name_charr.length; i > 23; i--) {
+				name_charr.pop();
+			}
+			var name = name_charr.join('') + "...";
+		}
+
+		$("#team_name").html(name);
 		$("#team_number").html("#" + checkout_content.team.number);
 
 		//limit won editability based on checked_out
@@ -102,7 +112,6 @@
 
 			var won_label = "";
 			if(checkout_content.team.tabs[i].won == true) { won_label = "<i style='font-size: 1.3em; display: inline;' class='material-icons'>star</i>"; }
-			console.log(checkout_content.team.tabs[i].won);
 
 			$("#tab_selectors").html($("#tab_selectors").html()
 				+ "<li class='tab'><a href='#"
@@ -135,7 +144,6 @@
 
 	//place html string of metric cards for each metric in the tab into element with id
 	function loadMetrics(tab, id, cardColor, checked_out) {
-		console.log(tab.metrics);
 		//request metrics
 		for(var i = 0; i < tab.metrics.length; i++) {
 			var metric = tab.metrics[i];
@@ -172,16 +180,16 @@
 
 	//saves tab metrics locally
 	function saveTabs() {
-		var eurl = new URL(window.location.href);
-		var checkout_content = JSON.parse(JSON.parse(eurl.searchParams.get("checkout")).content);
-		var checkout = JSON.parse(eurl.searchParams.get("checkout"));
+
+		var checkout = JSON.parse(<?php echo $_POST['checkout']; ?>);
+		var checkout_content = JSON.parse(checkout.content);
 
 		//update all tabs
 		for(var i = 0; i < checkout_content.team.tabs.length; i++) {
 			var tab_id = "#" + checkout_content.team.tabs[i].matchType;
 			//update tab won
 			if(!(tab_id == "#PIT" || tab_id == "#PREDICTIONS")) {
-				checkout_content.team.tabs[i].won = $("#ts_" + checkout_content.team.tabs[i].matchType).attr("won");
+				checkout_content.team.tabs[i].won = ($("#ts_" + (checkout_content.team.tabs[i].matchType)).attr("won") == 'true');
 			}
 
 			//update metrics in tab
@@ -198,7 +206,6 @@
 		//find editing checkout
 		for(var k = 0; k < myCheckouts.length; k++) {
 			if(myCheckouts[k].id == checkout.id) {
-				// console.log(checkout_content);
 				myCheckouts[k].content = JSON.stringify(checkout_content);
 			}
 		}
@@ -261,6 +268,21 @@
 					title: metric.title,
 					id: tab_id + metric.id,
 					value: metric.value,
+					cardColor: cardColor
+				}
+			}).done(function ( data ) {
+				callback(data);
+			});
+		}
+		//RDivider
+		else if(metric.type == "RDivider") {
+			$.ajax({
+				type: 'POST',
+				url: "cards/metrics/" + metric.type + ".php",
+				data: {
+					metric: JSON.stringify(metric),
+					id: tab_id + metric.id,
+					title: metric.title,
 					cardColor: cardColor
 				}
 			}).done(function ( data ) {
