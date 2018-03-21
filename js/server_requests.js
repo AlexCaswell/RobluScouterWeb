@@ -32,8 +32,8 @@ function getTeamModel(callback) {
 function getCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut, deviceRole, callback) {
 	$.ajax({
 		type: 'GET',
-		url: "http://" + localStorage.getItem("serverIp") + "/checkouts/pullCheckouts",
-		data: { code: localStorage.getItem("teamCode"), pullAll: true }
+		url: "checkout_request.json" // "http://" + localStorage.getItem("serverIp") + "/checkouts/pullCheckouts",
+		// data: { code: localStorage.getItem("teamCode"), pullAll: true }
 	}).done( function ( data ) {
 
 	    // filter checkouts by device role

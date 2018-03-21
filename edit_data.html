@@ -69,13 +69,13 @@
 		});
 
 		//Load checkout object
-		var checkout_content = JSON.parse(JSON.parse(<?php echo $_POST['checkout']; ?>).content);
+		var checkout_content = JSON.parse( JSON.parse( JSON.parse( localStorage.getItem("editing_checkout") )[0] ).content );
 
 		//get wheather checked out
-		var checked_out = '<?php echo $_POST['checked_out']; ?>';
+		var checked_out = JSON.parse(localStorage.getItem("editing_checkout"))[1];
 
 		//set return tab
-		if(checked_out == "true") { $("#back").attr("href", "index.html?tab=myCheckouts"); }
+		if(checked_out == true) { $("#back").attr("href", "index.html?tab=myCheckouts"); }
 
 		// Set team name and number
 		//limit team name length
@@ -93,7 +93,7 @@
 		$("#team_number").html("#" + checkout_content.team.number);
 
 		//limit won editability based on checked_out
-		if(checked_out == 'true') { $("#settings_button").attr("style", $("#settings_button").attr("style") + "pointer-events: auto;"); }
+		if(checked_out == true) { $("#settings_button").attr("style", $("#settings_button").attr("style") + "pointer-events: auto;"); }
 		else { $("#settings_button").attr("style", $("#settings_button").attr("style") + "pointer-events: none;"); }
 
 		//load tabs with metrics
@@ -144,7 +144,7 @@
 
 	//place html string of metric cards for each metric in the tab into element with id
 	function loadMetrics(tab, id, cardColor, checked_out) {
-		//request metrics
+ 	//request metrics
 		for(var i = 0; i < tab.metrics.length; i++) {
 			var metric = tab.metrics[i];
 			metricRequest(tab.matchType, metric, checked_out, cardColor, function( data ) {
@@ -181,7 +181,7 @@
 	//saves tab metrics locally
 	function saveTabs() {
 
-		var checkout = JSON.parse(<?php echo $_POST['checkout']; ?>);
+		var checkout = JSON.parse( JSON.parse( localStorage.getItem("editing_checkout") )[0] );
 		var checkout_content = JSON.parse(checkout.content);
 
 		//update all tabs
@@ -207,6 +207,9 @@
 		for(var k = 0; k < myCheckouts.length; k++) {
 			if(myCheckouts[k].id == checkout.id) {
 				myCheckouts[k].content = JSON.stringify(checkout_content);
+
+				//update editing_checkout in case of page refresh
+				localStorage.setItem("editing_checkout", JSON.stringify([JSON.stringify(myCheckouts[k]), true]));
 			}
 		}
 
@@ -217,93 +220,72 @@
 
 	//makes the proper metric request
 	function metricRequest(tab_id, metric, checked_out, cardColor, callback) {
+
 		//RBoolean
 		if(metric.type == "RBoolean") {
-			$.ajax({
-				type: 'POST',
-				url: "cards/metrics/" + metric.type + ".php",
-				data: {
-					checked_out: checked_out,
-					metric: JSON.stringify(metric),
-					modified: metric.modified,
-					required: metric.required,
-					title: metric.title,
-					value: metric.value,
-					id: tab_id + metric.id,
-					cardColor: cardColor
-				}
-			}).done(function ( data ) {
-				callback(data);
-			});
+			var params = {
+				checked_out: checked_out,
+				metric: JSON.stringify(metric),
+				modified: metric.modified,
+				title: metric.title,
+				value: metric.value,
+				id: tab_id + metric.id,
+				cardColor: cardColor
+			};
+			callback(get_boolean(params));
 		}
+
 		//RTextfield
 		else if(metric.type == "RTextfield") {
-			$.ajax({
-				type: 'POST',
-				url: "cards/metrics/" + metric.type + ".php",
-				data: {
-					checked_out: checked_out,
-					metric: JSON.stringify(metric),
-					modified: metric.modified,
-					title: metric.title,
-					text: metric.text,
-					id: tab_id + metric.id,
-					oneLine: metric.oneLine,
-					// numericalOnly: metric.numericalOnly, (not currently supported)
-					cardColor: cardColor	
-				}
-			}).done(function ( data ) {
-				callback(data);
-			});
+			var params = {
+				checked_out: checked_out,
+				metric: JSON.stringify(metric),
+				modified: metric.modified,
+				title: metric.title,
+				text: metric.text,
+				id: tab_id + metric.id,
+				oneLine: metric.oneLine,
+				// numericalOnly: metric.numericalOnly, (not currently supported)
+				cardColor: cardColor
+			};
+			callback(get_textfield(params));
 		}
+
 		//RCounter
 		else if(metric.type == "RCounter") {
-			$.ajax({
-				type: 'POST',
-				url: "cards/metrics/" + metric.type + ".php",
-				data: {
-					checked_out: checked_out,
-					metric: JSON.stringify(metric),
-					modified: metric.modified,
-					title: metric.title,
-					id: tab_id + metric.id,
-					value: metric.value,
-					cardColor: cardColor
-				}
-			}).done(function ( data ) {
-				callback(data);
-			});
+			var params = {
+				checked_out: checked_out,
+				metric: JSON.stringify(metric),
+				modified: metric.modified,
+				title: metric.title,
+				id: tab_id + metric.id,
+				value: metric.value,
+				cardColor: cardColor
+			};
+			callback(get_counter(params));
 		}
+
 		//RDivider
 		else if(metric.type == "RDivider") {
-			$.ajax({
-				type: 'POST',
-				url: "cards/metrics/" + metric.type + ".php",
-				data: {
-					metric: JSON.stringify(metric),
-					id: tab_id + metric.id,
-					title: metric.title,
-					cardColor: cardColor
-				}
-			}).done(function ( data ) {
-				callback(data);
-			});
+			var params = {
+				metric: JSON.stringify(metric),
+				id: tab_id + metric.id,
+				title: metric.title,
+				cardColor: cardColor
+			};
+			callback(get_divider(params));
 		}
+
 		//RMetric
 		else {
-			$.ajax({
-				type: 'POST',
-				url: "cards/metrics/RMetric.php",
-				data: {
-					metric: JSON.stringify(metric),
-					type: metric.type,
-					title: metric.title,
-					id: tab_id + metric.id,
-					cardColor: cardColor
-				}
-			}).done(function ( data ) {
-				callback(data);
-			});
+			var params = {
+				metric: JSON.stringify(metric),
+				type: metric.type,
+				title: metric.title,
+				id: tab_id + metric.id,
+				cardColor: cardColor
+			};
+			callback(get_metric(params));
 		}
 	}
 
@@ -314,8 +296,6 @@
 		} else {
 			$("nav").attr("style", $("nav").attr("style") + " background: " + "#3F51B5" + " !important;");
 		}
-		
-"#D32F2F"
 	} 
 
 
@@ -325,7 +305,7 @@
 <!--Import jQuery before materialize.js-->
 <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
  <!-- import metric_update_functions.js -->
-<script type="text/javascript" src="js/metric_update_functions.js"></script>
+<script type="text/javascript" src="js/metric_functions.js"></script>
 </body>
 
 </html>
