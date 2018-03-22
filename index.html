@@ -149,57 +149,46 @@ function loadCheckouts(start, limit) {
 	var show_checked_out = $("#show_checked_out").is(':checked');
 
 	//load checkouts from server into checkouts div
-
 	getCheckouts(show_pit_checkouts, show_completed_checkouts, show_checked_out, '0', function( checkouts ) {
 
-		if(limit >= checkouts.length) { limit = checkouts.length; }
+		if(limit > checkouts.length) { limit = checkouts.length; }
+		for(var i = start; i < limit; i++) {
 
-		for(var i = start; i <= limit; i++) {
+			var checkout = checkouts[i];
+			var checkout_content = JSON.parse(checkouts[i].content);
 
-			st = i;
-			if (st == limit) { st--; }//so the load_more request has valid data
-
-
-			if(!(i == limit && limit == checkouts.length)) {
-				var checkout = checkouts[st];
-				var checkout_content = JSON.parse(checkouts[st].content);
-
-				var status;
-				if(checkout.status == 0 || checkout.status == -1) {
-					status = "Available";
-				}
-				if (checkout.status == 1) {
-					status = "Checked out to " + checkout_content.nameTag;
-				}
-				if (checkout.status == 2) {
-					status = "Completed"
-				}
-				$.ajax({
-					type: 'POST',
-					data: {
-						team: checkout_content.team.name,
-						type: checkout_content.team.tabs[0].matchType,
-						match_order: checkout_content.team.tabs[0].matchOrder,
-						card_color: cardColor,
-						available: status,
-						onclick: "openCheckout(" + checkout.id + ", false);",
-						checked_out: 0,
-						checkout: JSON.stringify(checkout),
-						id: checkout.id,
-						last: i == limit,
-						limit: limit
-					},
-					url: 'cards/get_checkout.php'
-				}).done( function(data) {
-					$("#checkouts").html($("#checkouts").html() + data);
-				});
+			var status;
+			if(checkout.status == 0 || checkout.status == -1) {
+				status = "Available";
 			}
+			if (checkout.status == 1) {
+				status = "Checked out to " + checkout_content.nameTag;
+			}
+			if (checkout.status == 2) {
+				status = "Completed"
+			}
+			var params = {
+				team: checkout_content.team.name,
+				type: checkout_content.team.tabs[0].matchType,
+				match_order: checkout_content.team.tabs[0].matchOrder,
+				cardColor: cardColor,
+				available: status,
+				onclick: "openCheckout(" + checkout.id + ", false);",
+				checked_out: false,
+				checkout: JSON.stringify(checkout),
+				id: checkout.id
+			};
+			$("#checkouts").html($("#checkouts").html() + get_checkout(params));
 		}
+		if(limit != checkouts.length) {
+			$("#checkouts").html($("#checkouts").html() + get_load_more(limit, limit + 30, false)); // add a "load more" button at the end if not already there
+		}
+
 	});
 }
 
 
-//adds all checkouts with the matching device role to myCheckouts (must be run after checkouts are loaded into the page)
+//adds all checkouts with the matching device role to myCheckouts item (must be run after checkouts are loaded into the page)
 function autoCheckout() {
 	if(localStorage.getItem("autoCheckoutModeTemp") != localStorage.getItem("autoCheckoutMode")) {
 
@@ -365,46 +354,79 @@ function checkout(id) {
 
 //loads myCheckouts localStorage item into my_checkouts div
 function loadMyCheckouts(start, limit) {
+
+	//Clear my_checkouts div
 	if(start == 0) {
 		$("#my_checkouts").html("");
 	}
 
-	var myCheckouts = [];
-	if(localStorage.getItem("myCheckouts") != null) { myCheckouts = JSON.parse(localStorage.getItem("myCheckouts")) }
+	//load checkouts from myCheckouts localStorage item into my_checkouts div
+	var checkouts = [];
+	if(localStorage.getItem("myCheckouts") != null) { checkouts = JSON.parse(localStorage.getItem("myCheckouts")) }
+	if(limit > checkouts.length) { limit = checkouts.length; }
+	for(var i = start; i < limit; i++) {
 
-	if(limit >= myCheckouts.length) { limit = myCheckouts.length; }
+		var checkout = checkouts[i];
+		var checkout_content = JSON.parse(checkouts[i].content);
 
-	var st = 0;
-	for(var i = start; i <= limit; i++) {
-
-		st = i;
-		if (st == limit) { st--; }//so the load_more request has valid data
-
-		//check if there are checkouts to be loaded on last iteration
-		if(!(i == limit && limit == myCheckouts.length)) {
-			var myCheckout = myCheckouts[st];
-			var myCheckout_content = JSON.parse(myCheckouts[st].content);
-
-			$.ajax({
-				type: 'POST',
-				data: {
-					team: myCheckout_content.team.name,
-					type: myCheckout_content.team.tabs[0].matchType,
-					match_order: myCheckout_content.team.tabs[0].matchOrder,
-					card_color: cardColor,
-					available: "Checked out to " + localStorage.getItem("username"),
-					onclick: "openCheckout(" + myCheckout.id + ", true);",
-					checked_out: 1,
-					checkout: JSON.stringify(myCheckout),
-					id: myCheckout.id,
-					last: i == limit,
-					limit: limit
-				},
-				url: 'cards/get_checkout.php'
-			}).done( function(data) {
-					$("#my_checkouts").html($("#my_checkouts").html() + data);
-			});
+		var status;
+		if(checkout.status == 0 || checkout.status == -1) {
+			status = "Available";
 		}
+		if (checkout.status == 1) {
+			status = "Checked out to " + checkout_content.nameTag;
+		}
+		if (checkout.status == 2) {
+			status = "Completed"
+		}
+		var params = {
+			team: checkout_content.team.name,
+			type: checkout_content.team.tabs[0].matchType,
+			match_order: checkout_content.team.tabs[0].matchOrder,
+			cardColor: cardColor,
+			available: status,
+			onclick: "openCheckout(" + checkout.id + ", true);",
+			checked_out: true,
+			checkout: JSON.stringify(checkout),
+			id: checkout.id
+		};
+		$("#my_checkouts").html($("#my_checkouts").html() + get_checkout(params));
+	}
+	if(limit != checkouts.length) {
+		$("#my_checkouts").html($("#my_checkouts").html() + get_load_more(limit, limit + 30, true));
+	}
+
+}
+
+
+//returns checkout html to the specifications of params
+function get_checkout(params) {
+
+if(params.type != "PIT") { var title = params.type + " " + params.match_order; } else { var title = "PIT"; } //checkout title
+if(params.checked_out) { var icon = "cloud_upload"; } else { var icon = "add"; } //icon name
+if(params.checked_out) { var ua_function = "completeCheckout(" + params.id + ");"; } else { var ua_function = "checkout(" + params.id + "); loadMyCheckouts(0, 30);"; } // upload/add function
+
+return ' \
+	<div class="card blue-grey darken-1" style="background: ' + params.cardColor + ' !important;"> \
+		<div class="card-content white-text"> \
+			<div checkout=\'' + params.checkout + '\' id="' + params.id + '" onclick="' + params.onclick + '"> \
+				<span style="color: #FFF;" class="card-title">' + params.team + '</span> \
+				<p style="color: #FFF;">' + title + '</p> \
+				<p style="color: #FFF;">' + params.available + '</p> \
+			</div> \
+			<a style="background: #2A2A2A; position: absolute; bottom: 10px; right: 10px;" onclick="' + ua_function + '" class="btn-floating btn-large waves-effect waves-light"><i class="material-icons">' + icon + ' \
+			</i></a> \
+		</div> \
+	</div> \
+';
+
+}
+
+function get_load_more(start, limit, ck_out) {
+	if(ck_out) {
+		return '<div class=\'lm_ck\' onclick=\'loadMyCheckouts(' + start + ', ' + limit + '); $(".lm_ck").css("display", "none");\' style=\'width: 100%; text-align: center;\'><p style=\'color: #fff; padding: 14px 0;\'>Load more</p></div>';
+	} else {
+		return '<div class=\'lm\' onclick=\'loadCheckouts(' + start + ', ' + limit + '); $(".lm").css("display", "none");\' style=\'width: 100%; text-align: center;\'><p style=\'color: #fff; padding: 14px 0;\'>Load more</p></div>';
 	}
 }
 
@@ -442,6 +464,7 @@ function loadDefaultsIfNeeded() {
 
 <!-- import server_request.js -->
 <script type="text/javascript" src="js/server_requests.js"></script>
+
 
 </body>
 
