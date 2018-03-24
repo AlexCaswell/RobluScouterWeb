@@ -331,7 +331,6 @@ function checkout(id) {
 
 	if (available) {
 		//add checkout to array with updated status and name tag
-		myCheckout.status = 1;
 		myCheckoutContent = JSON.parse(myCheckout.content);
 		myCheckoutContent.nameTag = localStorage.getItem("username");
 		myCheckoutContent.status = 1;
@@ -447,10 +446,10 @@ function getAutoCheckoutModeString(ac_mode) {
 //Checks if settings are set in localStorage. If they are not, set them to the defaults.
 function loadDefaultsIfNeeded() {
 	$.getJSON("../default_settings.json", function(json) {
-		if (localStorage.getItem("username") === "undefined") { localStorage.setItem("username", json.username); }
-		if (localStorage.getItem("serverIp") === "undefined") { localStorage.setItem("serverIp", json.serverIp); }
-		if (localStorage.getItem("teamCode") === "undefined") { localStorage.setItem("teamCode", json.teamCode); }
-		if (localStorage.getItem("autoCheckoutMode") === "undefined") { localStorage.setItem("autoCheckoutMode", json.autoCheckoutMode); }
+		if (localStorage.getItem("username") == "") { localStorage.setItem("username", json.username); }
+		if (localStorage.getItem("serverIp") == "") { localStorage.setItem("serverIp", json.serverIp); }
+		if (localStorage.getItem("teamCode") == "") { localStorage.setItem("teamCode", json.teamCode); }
+		if (localStorage.getItem("autoCheckoutMode") == "") { localStorage.setItem("autoCheckoutMode", json.autoCheckoutMode); }
 	});
 }
 

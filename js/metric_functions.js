@@ -263,6 +263,151 @@ return ' \
 
 
 
+
+/*****************************************
+RCheckbox
+*****************************************/
+
+function get_checkbox(params) {
+
+	if(params.checked_out == true) { var ck_out_value = "auto";	} else { var ck_out_value = "none";	} // pointer-events
+	if(params.modified == true) { var visibility = "hidden"; } else { var visibility = "visible"; }  // visibility
+
+	var checkboxes = "";
+	var keys = Object.keys(params.values);
+	for(var i = 0; i < keys.length; i++) {
+		var id = params.id + "_" + keys[i].replace(/\s+/g, '-');
+		var checked  = "";
+		if(params.values[keys[i]]) { checked = "checked"; }
+
+		checkboxes += ' \
+  			<li> \
+				<a> \
+					<input type="checkbox" onclick="update_checkbox(\'' + id + '\')" class="filled-in checkbox-color" id="' + id + '" ' + checked + '/> \
+					<label style="color: #FFF;" for="' + id + '">' + keys[i] + '</label> \
+				</a> \
+  			</li> \
+		';
+	}
+
+	return ' \
+	<div class="card blue-grey darken-1" style="background: ' + params.cardColor + ' !important;"> \
+		<div class="card-content white-text valign-wrapper"> \
+			<span style="color: #FFF; margin: 0;" class="card-title">' + params.title + '</span> \
+			<div style="width: 100%; text-align: right;"> \
+				<div style="display: inline-block; pointer-events: ' + ck_out_value + '; text-align: right; position: relative; top: 20%; margin-right: 20px; \
+				 margin-bottom: 10px;" metric=\'' + params.metric + '\' id="' + params.id + '"> \
+					<ul style=" text-align: left; margin: 12px 0 4px 0;"> \
+						' + checkboxes + ' \
+					</ul> \
+					<style type="text/css"> \
+						.checkbox-color[type="checkbox"].filled-in:checked + label:after { \
+							background: #333; \
+							border: #333; \
+						} \
+					</style> \
+				</div> \
+			</div> \
+			<p  id="modified_' + params.id + '" style="font-size: 0.6em; color: #FFF; position: absolute; bottom: 15px; right: 15px; visibility: ' + visibility + ';">Not observed yet</p> \
+			<br> \
+		</div> \
+	</div> \
+';
+
+}
+
+function update_checkbox(id) {
+	var key = id.replace(/(.*?)\_/g, "").replace("-", " ");
+	var id = id.replace(/\_(.*)/g, "");
+	var metric = JSON.parse($("#" + id).attr("metric"));
+
+	metric.modified = true;
+
+	if(metric.values[key]) {
+		metric.values[key] = false;
+	} else {
+		metric.values[key] = true;
+	}
+
+	$("#" + id).attr("metric", JSON.stringify(metric));
+	$("#modified_" + id).css("visibility", "hidden");
+
+	saveTabs();
+}
+
+
+
+/*****************************************
+RSlider
+*****************************************/
+
+function get_slider(params) {
+
+
+	if(params.checked_out == true) { var ck_out_value = "auto";	} else { var ck_out_value = "none";	} // pointer-events
+	if(params.modified == true) { var visibility = "hidden"; } else { var visibility = "visible"; }  // visibility
+
+	return ' \
+		<div class="card blue-grey darken-1" style="background: ' + params.cardColor + ' !important;"> \
+			<div class="card-content white-text valign-wrapper"> \
+				<div style="width: 100%;"> \
+					<p color: #FFF; margin: 0;" class="card-title">' + params.title + '</p> \
+					<div style="pointer-events: ' + ck_out_value + '; text-align: right; margin-bottom: 10px;" metric=\'' + params.metric + '\' id="' + params.id + '"> \
+						<br> \
+					    <p class="range-field" style="display: block;"> \
+					      <input type="range" id="sl_'+ params.id + '"  onchange="update_slider(\'' + params.id + '\');" value="' + params.value + '" min="' + params.min + '" max="' + params.max + '" /> \
+					    </p> \
+					    <style> \
+							input[type=range]::-webkit-slider-thumb { \
+								background-color: #333; \
+							} \
+							input[type=range]::-webkit-slider-runnable-track { \
+								background: #999; \
+							    height: 2px; \
+							} \
+							input[type=range] { \
+							    border: none; \
+							} \
+							input[type=range]::-moz-range-thumb { \
+								background-color: #333; \
+							} \
+							input[type=range]::-ms-thumb { \
+								background-color: #333; \
+							} \
+							/***** These are to edit the thumb and the text inside the thumb *****/ \
+							input[type=range] + .thumb { \
+								background-color: #333; \
+							} \
+							input[type=range] + .thumb.active .value { \
+								color: #FFF; \
+							} \
+						</style> \
+					</div> \
+				</div> \
+				<p  id="modified_' + params.id + '" style="font-size: 0.6em; color: #FFF; position: absolute; bottom: 15px; right: 15px; visibility: ' + visibility + ';">Not observed yet</p> \
+				<span  id="slval_' + params.id + '" style="font-size: 0.9em; color: #FFF; position: absolute; bottom: 10px; left: 0; width: 100%; text-align: center;">' + params.value + '</span> \
+				<br> \
+			</div> \
+		</div> \
+	';
+
+}
+
+function update_slider(id) {
+	var metric = JSON.parse($("#" + id).attr("metric"));
+
+	metric.modified = true;
+	metric.value = $("#sl_" + id).val();
+
+	$("#" + id).attr("metric", JSON.stringify(metric));
+	$("#slval_" + id).html($("#sl_" + id).val());
+	$("#modified_" + id).css("visibility", "hidden");
+
+	saveTabs();
+}
+
+
+
 /*****************************************
 RMetric
 *****************************************/

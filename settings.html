@@ -283,13 +283,20 @@
 
 	}
 
+	//Checks if settings are set in localStorage. If they are not, set them to the defaults.
+	function loadDefaultsIfNeeded() {
+		$.getJSON("../default_settings.json", function(json) {
+			if (localStorage.getItem("username") == "") { localStorage.setItem("username", json.username); }
+			if (localStorage.getItem("serverIp") == "") { localStorage.setItem("serverIp", json.serverIp); }
+			if (localStorage.getItem("teamCode") == "") { localStorage.setItem("teamCode", json.teamCode); }
+			if (localStorage.getItem("autoCheckoutMode") == "") { localStorage.setItem("autoCheckoutMode", json.autoCheckoutMode); }
+		});
+	}
+
 </script>
 
  <!--Import jQuery before materialize.js-->
  <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
-
- <!-- import util_functions.js -->
-<script type="text/javascript" src="js/util_functions.js"></script>
 </body>
 
 </html>

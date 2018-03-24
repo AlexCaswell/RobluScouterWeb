@@ -265,6 +265,36 @@
 			callback(get_counter(params));
 		}
 
+		//RCheckbox
+		else if(metric.type == "RCheckbox") {
+			var params = {
+				checked_out: checked_out,
+				metric: JSON.stringify(metric),
+				modified: metric.modified,
+				title: metric.title,
+				id: tab_id + metric.id,
+				values: metric.values,
+				cardColor: cardColor
+			};
+			callback(get_checkbox(params));
+		}
+
+		//RSlider
+		else if(metric.type == "RSlider") {
+			var params = {
+				checked_out: checked_out,
+				metric: JSON.stringify(metric),
+				modified: metric.modified,
+				title: metric.title,
+				id: tab_id + metric.id,
+				max: metric.max,
+				min: metric.min,
+				value: metric.value,
+				cardColor: cardColor
+			};
+			callback(get_slider(params));
+		}
+
 		//RDivider
 		else if(metric.type == "RDivider") {
 			var params = {
