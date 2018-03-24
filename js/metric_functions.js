@@ -7,6 +7,9 @@ The following metrics are currently supported:
 -RCounter
 -RTextfield
 -RDivider
+-RCheckbox
+-RSlider
+-RChooser
 
 any unsupported metrics should be requested as RMetrics
 
@@ -405,6 +408,67 @@ function update_slider(id) {
 
 	saveTabs();
 }
+
+
+
+/*****************************************
+RChooser
+*****************************************/
+
+function get_chooser(params) {
+
+
+	if(params.checked_out == true) { var ck_out_value = "auto";	} else { var ck_out_value = "none";	} // pointer-events
+	if(params.modified == true) { var visibility = "hidden"; } else { var visibility = "visible"; }  // visibility
+
+	var options = "";
+	for(var i = 0; i < params.values.length; i++) {
+		var id = params.values[i].replace(/\s+/g, '-');
+
+		options += ' \
+			<li onclick="update_chooser(\'' + id + '\', \'' + params.id + '\');"><a id="cop_' + params.id + '" style="color: #FFF;">' + params.values[i] + '</a></li> \
+		';
+	}
+
+	return ' \
+		<div class="card blue-grey darken-1" style="background: ' + params.cardColor + ' !important;"> \
+			<div class="card-content white-text valign-wrapper"> \
+				<div class="valign-wrapper" style="width: 100%;"> \
+					<p style="color: #FFF; margin: 0;" class="card-title">' + params.title + '</p> \
+					<div style="pointer-events: ' + ck_out_value + '; text-align: right; margin-bottom: 10px;" metric=\'' + params.metric + '\' id="' + params.id + '"> \
+						<a id="select_' + params.id + '" data-activates=\'dl_' + params.id + '\' class="dropdown-button btn" style="background: #333; position: absolute; top: 27%; right: 30px;">' + params.values[params.selectedIndex] + '</a> \
+      					<ul style="min-width: 250px; background: #333;" id="dl_' + params.id + '" class="dropdown-content"> \
+      						' + options + ' \
+      					</ul>\
+					</div> \
+				</div> \
+				<p  id="modified_' + params.id + '" style="font-size: 0.6em; color: #FFF; position: absolute; bottom: 5px; right: 5px; visibility: ' + visibility + ';">Not observed yet</p> \
+				<br> \
+			</div> \
+		</div> \
+	';
+
+}
+
+function update_chooser(id, metric_id) {
+	var metric = JSON.parse($("#" + metric_id).attr("metric"));
+
+	metric.modified = true;
+	
+	//get index of selected value
+	for(var i = 0; i < metric.values.length; i++) {
+		if(metric.values[i].replace(/\s+/g, '-') == id) {
+			metric.selectedIndex = i;
+			$("#select_" + metric_id).html(metric.values[i]);
+		}
+	}
+
+	$("#" + metric_id).attr("metric", JSON.stringify(metric));
+	$("#modified_" + metric_id).css("visibility", "hidden");
+
+	saveTabs();
+}
+
 
 
 

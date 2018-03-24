@@ -295,6 +295,21 @@
 			callback(get_slider(params));
 		}
 
+		//RChooser
+		else if(metric.type == "RChooser") {
+			var params = {
+				checked_out: checked_out,
+				metric: JSON.stringify(metric),
+				modified: metric.modified,
+				title: metric.title,
+				id: tab_id + metric.id,
+				values: metric.values,
+				selectedIndex: metric.selectedIndex,
+				cardColor: cardColor
+			};
+			callback(get_chooser(params));
+		}
+
 		//RDivider
 		else if(metric.type == "RDivider") {
 			var params = {
