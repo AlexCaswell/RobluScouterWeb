@@ -9,6 +9,7 @@
 	<!--Import materialize.css-->
 	<link type="text/css" rel="stylesheet" href="materialize/css/materialize.min.css"  media="screen,projection"/>
 
+	<link rel="shortcut icon" type="img/png" href="favicon.png"> 
 
   	<!--Let browser know website is optimized for mobile-->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -59,7 +60,7 @@
 	    <div class="nav-content">
 	      <ul class="tabs tabs-transparent">
 	        <li class="tab"><a id="mc_a" href="#my_checkouts">My Checkouts</a></li>
-	        <li class="tab"><a id="c_a" class="active" href="#checkouts">Checkouts</a></li>
+	        <li class="tab"><a id="c_a" onclick="loadCheckouts(0, 30);" class="active" href="#checkouts">Checkouts</a></li>
 	      </ul>
 	    </div>
  	</nav><br><br><br><br><br><br>
@@ -114,11 +115,6 @@
 		$("body").attr("style", "background: " + backgroundColor + " !important;");
 		$("#settings_list").attr("style", $("#settings_list").attr("style") + " background-color: " + backgroundColor + " !important;");
 
-		// Set active event name from server
-		getTeamModel( function(data) {
-			$("#active_event_label").text(data.active_event_name);
-		});
-
 		// Set scouter role from settings
 		var title = "Roblu Scouter";
 		if (localStorage.getItem("autoCheckoutMode") != 0) {
@@ -126,9 +122,27 @@
 		}
 		$("#title").text(title);
 
-		loadCheckouts(0, 30); //load main checkouts from server
-		autoCheckout(); //add checkouts with matching autoCheckoutMode to myCheckouts localStorage item
+
+		// Set active event name from server
+		getTeamModel( function(data) {
+			$("#active_event_label").text(data.active_event_name);
+		});
+
+		// load depending on isActive
+		getIsActive( function( isActive ) {
+			if(isActive == true) {
+				pullCheckouts();
+				setInterval(function () { pullCheckouts(); }, 10000); //call the pullCheckouts function periodically
+
+				loadCheckouts(0, 30); //load main checkouts from server
+				autoCheckout(); //add checkouts with matching autoCheckoutMode to myCheckouts localStorage item
+			} else {
+				Materialize.toast("No active event.", 2500);
+			}
+		});
+
 		loadMyCheckouts(0, 30); //load checkouts from myCheckouts localStorage item into my_checkous div
+
  	});
 
 </script>
@@ -149,8 +163,7 @@ function loadCheckouts(start, limit) {
 	var show_checked_out = $("#show_checked_out").is(':checked');
 
 	//load checkouts from server into checkouts div
-	getCheckouts(show_pit_checkouts, show_completed_checkouts, show_checked_out, '0', function( checkouts ) {
-
+	filterCheckouts(show_pit_checkouts, show_completed_checkouts, show_checked_out, '0', function( checkouts ) {
 		if(limit > checkouts.length) { limit = checkouts.length; }
 		for(var i = start; i < limit; i++) {
 
@@ -158,13 +171,13 @@ function loadCheckouts(start, limit) {
 			var checkout_content = JSON.parse(checkouts[i].content);
 
 			var status;
-			if(checkout.status == 0 || checkout.status == -1) {
+			if(checkout_content.status == 0 || checkout_content.status == -1) {
 				status = "Available";
 			}
-			if (checkout.status == 1) {
+			if (checkout_content.status == 1) {
 				status = "Checked out to " + checkout_content.nameTag;
 			}
-			if (checkout.status == 2) {
+			if (checkout_content.status == 2) {
 				status = "Completed"
 			}
 			var params = {
@@ -181,24 +194,89 @@ function loadCheckouts(start, limit) {
 			$("#checkouts").html($("#checkouts").html() + get_checkout(params));
 		}
 		if(limit != checkouts.length) {
-			$("#checkouts").html($("#checkouts").html() + get_load_more(limit, limit + 30, false)); // add a "load more" button at the end if not already there
+			var html = get_load_more(limit, limit + 30, false);
+			setTimeout(function () { $("#checkouts").html($("#checkouts").html() + html); }, 30); // add a "load more" button at the end if not already there
 		}
 
 	});
 }
 
 
-//adds all checkouts with the matching device role to myCheckouts item (must be run after checkouts are loaded into the page)
+//
+function filterCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut, deviceRole, callback) {
+
+	var data = JSON.parse(localStorage.getItem("checkouts"));
+
+    // filter checkouts by device role
+    var sorted_checkouts_d = [];
+  	var index = 0;
+
+  	if(deviceRole != 0) {
+    	for(var i = 0; i < data.length; i++) {
+    		var checkout = JSON.parse(data[i].content);
+
+    		// Pit role
+	    	if(checkout.team.tabs[0].matchType == "PIT" && deviceRole != 7) { continue; }
+	    	// Blue 3 role
+	    	if(checkout.team.tabs[0].alliancePosition == 6 && deviceRole != 6) { continue; }
+	    	// Blue 2 role
+	    	if(checkout.team.tabs[0].alliancePosition == 5 && deviceRole != 5) { continue; }
+	    	// Blue 1 role
+	    	if(checkout.team.tabs[0].alliancePosition == 4 && deviceRole != 4) { continue; }
+	    	// Red 3 role
+	    	if(checkout.team.tabs[0].alliancePosition == 3 && deviceRole != 3) { continue; }
+	    	// Red 2 role
+	    	if(checkout.team.tabs[0].alliancePosition == 2 && deviceRole != 2) { continue; }
+	    	// Red 1 role
+	    	if(checkout.team.tabs[0].alliancePosition == 1 && deviceRole != 1) { continue; }
+
+    		sorted_checkouts_d[index] = data[i];
+    		index++;
+		}
+	}else {
+		sorted_checkouts_d = data; // if device role is 0 no filtering is needed.
+	}
+
+
+	// filter remaining checkouts based on "checkbox variables"
+	var sorted_checkouts_dc = [];
+	index = 0;
+
+    for (var i = 0; i < sorted_checkouts_d.length; i++) {
+    	var checkout = sorted_checkouts_d[i];
+    	var checkout_content = JSON.parse(sorted_checkouts_d[i].content);
+
+    	// Filter pit checkouts
+    	if(!showPitCheckouts && checkout_content.team.tabs[0].matchType == "PIT") { continue; }
+    	// Filter comleted checkouts
+    	if(!showCompletedCheckouts && checkout.status == 2) { continue; }
+    	// Filter checked out
+    	if(!showCheckedOut && checkout.status == 1) { continue; }
+
+		sorted_checkouts_dc[index] = checkout;
+		index++;
+    }
+
+
+	//return sorted checkouts
+	callback(sorted_checkouts_dc);
+
+}
+
+//adds all checkouts with the matching device role to myCheckouts item (must be run after checkouts are loaded into localStorage item)
 function autoCheckout() {
 	if(localStorage.getItem("autoCheckoutModeTemp") != localStorage.getItem("autoCheckoutMode")) {
 
-		//remove old device role checkouts
+		//remove old device role checkouts and change status' to 0
+		// release status'
+		uploadMyCheckouts(true);
+		// remove item
 		localStorage.removeItem("myCheckouts");
 		localStorage.setItem("autoCheckoutModeTemp", localStorage.getItem("autoCheckoutMode"));
 
 		if(localStorage.getItem("autoCheckoutMode") != '0') {
 		
-			getCheckouts(true, true, true, localStorage.getItem("autoCheckoutMode"), function( checkouts ) {
+			filterCheckouts(true, true, true, localStorage.getItem("autoCheckoutMode"), function( checkouts ) {
 				for(var i = 0; i < checkouts.length; i++) {
 					//load myCheckouts array
 					var my_checkouts = [];
@@ -228,11 +306,10 @@ function autoCheckout() {
 
 					if(available) {
 						//update status
-						checkouts[i].status = 1;
 						var ck_content = JSON.parse(checkouts[i].content);
+						ck_content.nameTag = localStorage.getItem("username");
 						ck_content.status = 1;
 						checkouts[i].content = JSON.stringify(ck_content);
-						checkouts[i].nameTag = localStorage.getItem("username");
 						//add checkout to array
 						my_checkouts[my_checkouts.length] = checkouts[i];
 
@@ -241,7 +318,7 @@ function autoCheckout() {
 					}
 				}
 				loadMyCheckouts(0, 30); //refresh html
-				uploadMyCheckouts(); //sync status' with server
+				uploadMyCheckouts(false); //sync status' with server
 			});
 		}
 	}
@@ -265,18 +342,29 @@ function completeCheckout(id) {
 	//remove from array
 	myCheckouts.splice(ck_index, 1);
 
-	//store in localStorage
+	//save changes in localStorage
 	localStorage.setItem("myCheckouts", JSON.stringify(myCheckouts));
 
-	checkout.status = 2;
+	var ck_content = JSON.parse(checkout.content);
+	ck_content.status = 2;
+	checkout.content = JSON.stringify(ck_content);
 	checkouts = [checkout];
 	Materialize.toast("Checkout completed.", 2500);
 	pushCheckouts(checkouts);
 }
 
 //uploads all checkouts in myCheckouts
-function uploadMyCheckouts() {
+function uploadMyCheckouts(release) {
 	var myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
+	if(release && myCheckouts.length != 0) {
+		//change checkout status' to available
+		for(var i = 0; i < myCheckouts.length; i++) {
+			var ck_content = JSON.parse(myCheckouts[i].content);
+			ck_content.status = 0;
+			myCheckouts[i].content = JSON.stringify(ck_content);
+		}
+	}
+
 	if(myCheckouts.length != 0) {
 		pushCheckouts(myCheckouts);
 	}
@@ -347,7 +435,7 @@ function checkout(id) {
 		Materialize.toast("Already checked out", 2500);
 	}
 
-	uploadMyCheckouts();//sync status' with the server
+	uploadMyCheckouts(false);//sync status' with the server
 
 }
 
@@ -369,13 +457,13 @@ function loadMyCheckouts(start, limit) {
 		var checkout_content = JSON.parse(checkouts[i].content);
 
 		var status;
-		if(checkout.status == 0 || checkout.status == -1) {
+		if(checkout_content.status == 0 || checkout.status == -1) {
 			status = "Available";
 		}
-		if (checkout.status == 1) {
+		if (checkout_content.status == 1) {
 			status = "Checked out to " + checkout_content.nameTag;
 		}
-		if (checkout.status == 2) {
+		if (checkout_content.status == 2) {
 			status = "Completed"
 		}
 		var params = {

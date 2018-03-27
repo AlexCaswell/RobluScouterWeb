@@ -9,6 +9,7 @@
 	<!--Import materialize.css-->
 	<link type="text/css" rel="stylesheet" href="materialize/css/materialize.min.css"  media="screen,projection"/>
 
+	<link rel="shortcut icon" type="img/png" href="favicon.png"> 
 
   	<!--Let browser know website is optimized for mobile-->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -69,7 +70,7 @@
 		});
 
 		//Load checkout object
-		var checkout_content = JSON.parse( JSON.parse( JSON.parse( localStorage.getItem("editing_checkout") )[0] ).content );
+		var checkout_content = JSON.parse( JSON.parse( JSON.parse( localStorage.getItem("editing_checkout") )[0] ).content ).replace("'", "\\\'");
 
 		//get wheather checked out
 		var checked_out = JSON.parse(localStorage.getItem("editing_checkout"))[1];
