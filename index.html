@@ -45,6 +45,7 @@
 					</a>
       			</li>
       			<li><a id="settings" href="settings.html">Settings</a></li>
+      			<li><a id="settings" onclick="pullCheckouts( function (data) { if(data.status == 'success') { loadCheckouts(0, 30); Materialize.toast(data.data.length + ' checkout(s) successfully pulled from server', 2500); } });">Refresh</a></li>
       		</ul>
       		<!-- change textbox color -->
       		<style type="text/css">
@@ -89,12 +90,7 @@
 			$("#mc_a").attr("class", "active");
 		}
 
-		// Make sure browser is compatible with settings storage method (localStorage)
-		if(typeof(Storage) === "undefined") {
-			window.location.replace("error.html");
-		}else {
-			loadDefaultsIfNeeded();
-		}
+		loadDefaultsIfNeeded();
 
 		// initialize settings dropdown
 		$('.dropdown-button').dropdown({
@@ -117,8 +113,12 @@
 
 		// Set scouter role from settings
 		var title = "Roblu Scouter";
-		if (localStorage.getItem("autoCheckoutMode") != 0) {
-			title += " - " + getAutoCheckoutModeString(localStorage.getItem("autoCheckoutMode"));
+		if(getItem("autoCheckoutMode", false) !== '0') {
+			if(getAutoCheckoutModeString(parseInt(getItem("autoCheckoutMode", false))) === null) {
+				Materialize.toast("Some settings are empty", 2500);
+			}else {
+				title += " - " + getAutoCheckoutModeString(parseInt(getItem("autoCheckoutMode", false)));
+			}
 		}
 		$("#title").text(title);
 
@@ -131,17 +131,17 @@
 		// load depending on isActive
 		getIsActive( function( isActive ) {
 			if(isActive == true) {
-				pullCheckouts();
-				setInterval(function () { pullCheckouts(); }, 10000); //call the pullCheckouts function periodically
+				pullCheckouts(function () { loadCheckouts(0, 30); });
+				// setInterval(function () { pullCheckouts(); }, 10000); //call the pullCheckouts function periodically
 
-				loadCheckouts(0, 30); //load main checkouts from server
-				autoCheckout(); //add checkouts with matching autoCheckoutMode to myCheckouts localStorage item
+				// loadCheckouts(0, 30); //load main checkouts from server
+				autoCheckout(); //add checkouts with matching autoCheckoutMode to myCheckouts
 			} else {
 				Materialize.toast("No active event.", 2500);
 			}
 		});
 
-		loadMyCheckouts(0, 30); //load checkouts from myCheckouts localStorage item into my_checkous div
+		loadMyCheckouts(0, 30); //load checkouts from myCheckouts item into my_checkous div
 
  	});
 
@@ -205,7 +205,7 @@ function loadCheckouts(start, limit) {
 //
 function filterCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOut, deviceRole, callback) {
 
-	var data = JSON.parse(localStorage.getItem("checkouts"));
+	var	data = JSON.parse(getItem("checkouts", true));
 
     // filter checkouts by device role
     var sorted_checkouts_d = [];
@@ -263,28 +263,24 @@ function filterCheckouts(showPitCheckouts, showCompletedCheckouts, showCheckedOu
 
 }
 
-//adds all checkouts with the matching device role to myCheckouts item (must be run after checkouts are loaded into localStorage item)
+//adds all checkouts with the matching device role to myCheckouts item (must be run after checkouts are loaded into storage item)
 function autoCheckout() {
-	if(localStorage.getItem("autoCheckoutModeTemp") != localStorage.getItem("autoCheckoutMode")) {
+	if(getItem("autoCheckoutModeTemp", false) != getItem("autoCheckoutMode", false)) {
 
 		//remove old device role checkouts and change status' to 0
 		// release status'
 		uploadMyCheckouts(true);
 		// remove item
-		localStorage.removeItem("myCheckouts");
-		localStorage.setItem("autoCheckoutModeTemp", localStorage.getItem("autoCheckoutMode"));
+		removeItem("myCheckouts");
+		setItem("autoCheckoutModeTemp", getItem("autoCheckoutMode", false));
 
-		if(localStorage.getItem("autoCheckoutMode") != '0') {
+		if(getItem("autoCheckoutMode", false) != '0') {
 		
-			filterCheckouts(true, true, true, localStorage.getItem("autoCheckoutMode"), function( checkouts ) {
+			filterCheckouts(true, true, true, getItem("autoCheckoutMode", false), function( checkouts ) {
 				for(var i = 0; i < checkouts.length; i++) {
 					//load myCheckouts array
-					var my_checkouts = [];
-					if(localStorage.getItem("myCheckouts") === null) {
-						localStorage.setItem("myCheckouts", JSON.stringify(my_checkouts));
-					}else {
-						my_checkouts = JSON.parse(localStorage.getItem("myCheckouts"));
-					}
+					var my_checkouts = JSON.parse(getItem("myCheckouts", true));
+					
 
 					//make sure checkout is not already checked out
 					var available = false;
@@ -307,14 +303,14 @@ function autoCheckout() {
 					if(available) {
 						//update status
 						var ck_content = JSON.parse(checkouts[i].content);
-						ck_content.nameTag = localStorage.getItem("username");
+						ck_content.nameTag = getItem("username", false);
 						ck_content.status = 1;
 						checkouts[i].content = JSON.stringify(ck_content);
 						//add checkout to array
 						my_checkouts[my_checkouts.length] = checkouts[i];
 
 						//serialize and store array
-						localStorage.setItem("myCheckouts", JSON.stringify(my_checkouts));
+						setItem("myCheckouts", JSON.stringify(my_checkouts));
 					}
 				}
 				loadMyCheckouts(0, 30); //refresh html
@@ -329,7 +325,7 @@ function completeCheckout(id) {
 	var checkout = JSON.parse($("#my_checkouts").find(".card").find(".card-content").find("#" + id).attr("checkout"));
 	$("#my_checkouts").find(".card").find(".card-content").find("#" + id).parent().parent().css("display", "none");
 
-	var myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
+	var myCheckouts = JSON.parse(getItem("myCheckouts", true));
 	var ck_index;
 	//find checkout index in myCheckouts storage
 	for(var i = 0; i < myCheckouts.length; i++) {
@@ -342,8 +338,8 @@ function completeCheckout(id) {
 	//remove from array
 	myCheckouts.splice(ck_index, 1);
 
-	//save changes in localStorage
-	localStorage.setItem("myCheckouts", JSON.stringify(myCheckouts));
+	//save changes in local storage
+	setItem("myCheckouts", JSON.stringify(myCheckouts));
 
 	var ck_content = JSON.parse(checkout.content);
 	ck_content.status = 2;
@@ -355,7 +351,7 @@ function completeCheckout(id) {
 
 //uploads all checkouts in myCheckouts
 function uploadMyCheckouts(release) {
-	var myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
+	var myCheckouts = JSON.parse(getItem("myCheckouts", true));
 	if(release && myCheckouts.length != 0) {
 		//change checkout status' to available
 		for(var i = 0; i < myCheckouts.length; i++) {
@@ -380,21 +376,16 @@ function openCheckout(id, ck_out) {
 	} else {
 		var checkout = $("#checkouts").find("#" + id).attr("checkout");
 	}
-	localStorage.setItem("editing_checkout", JSON.stringify([checkout, ck_out]));
+	setItem("editing_checkout", JSON.stringify([checkout, ck_out]));
 
 	window.location.replace(eurl);
 }
 
-//adds checkout to myCheckouts localStorage item
+//adds checkout to myCheckouts local storage item
 function checkout(id) {
 
 	//load myCheckouts array
-	var myCheckouts = [];
-	if(localStorage.getItem("myCheckouts") === null) {
-		localStorage.setItem("myCheckouts", JSON.stringify(myCheckouts));
-	}else {
-		myCheckouts = JSON.parse(localStorage.getItem("myCheckouts"));
-	}
+	var myCheckouts = JSON.parse(getItem("myCheckouts", true));
 
 	//get checkout to checkout
 	var myCheckout = JSON.parse($("#" + id).attr("checkout"));
@@ -420,17 +411,17 @@ function checkout(id) {
 	if (available) {
 		//add checkout to array with updated status and name tag
 		myCheckoutContent = JSON.parse(myCheckout.content);
-		myCheckoutContent.nameTag = localStorage.getItem("username");
+		myCheckoutContent.nameTag = getItem("username", false);
 		myCheckoutContent.status = 1;
 		myCheckout.content = JSON.stringify(myCheckoutContent);
 		myCheckouts[myCheckouts.length] = myCheckout;
 
 		//serialize and store array
-		localStorage.setItem("myCheckouts", JSON.stringify(myCheckouts));
+		setItem("myCheckouts", JSON.stringify(myCheckouts));
 
 		//notify
 		var myCheckout_content = JSON.parse(myCheckout.content);
-		Materialize.toast(myCheckout_content.team.name + " " + myCheckout_content.team.tabs[0].matchType + " " + myCheckout_content.team.tabs[0].matchOrder + " has been checked out to " + localStorage.getItem("username"), 2500);
+		Materialize.toast(myCheckout_content.team.name + " " + myCheckout_content.team.tabs[0].matchType + " " + myCheckout_content.team.tabs[0].matchOrder + " has been checked out to " + getItem("username", false), 2500);
 	}else {
 		Materialize.toast("Already checked out", 2500);
 	}
@@ -439,7 +430,7 @@ function checkout(id) {
 
 }
 
-//loads myCheckouts localStorage item into my_checkouts div
+//loads myCheckouts local storage item into my_checkouts div
 function loadMyCheckouts(start, limit) {
 
 	//Clear my_checkouts div
@@ -447,9 +438,8 @@ function loadMyCheckouts(start, limit) {
 		$("#my_checkouts").html("");
 	}
 
-	//load checkouts from myCheckouts localStorage item into my_checkouts div
-	var checkouts = [];
-	if(localStorage.getItem("myCheckouts") != null) { checkouts = JSON.parse(localStorage.getItem("myCheckouts")) }
+	//load checkouts from myCheckouts local storage item into my_checkouts div
+	var checkouts = JSON.parse(getItem("myCheckouts", true));
 	if(limit > checkouts.length) { limit = checkouts.length; }
 	for(var i = start; i < limit; i++) {
 
@@ -530,17 +520,17 @@ function getAutoCheckoutModeString(ac_mode) {
 	else { return null; }
 }
 
-
 //Checks if settings are set in localStorage. If they are not, set them to the defaults.
 function loadDefaultsIfNeeded() {
-	$.getJSON("../default_settings.json", function(json) {
-		if (localStorage.getItem("username") == "") { localStorage.setItem("username", json.username); }
-		if (localStorage.getItem("serverIp") == "") { localStorage.setItem("serverIp", json.serverIp); }
-		if (localStorage.getItem("teamCode") == "") { localStorage.setItem("teamCode", json.teamCode); }
-		if (localStorage.getItem("autoCheckoutMode") == "") { localStorage.setItem("autoCheckoutMode", json.autoCheckoutMode); }
+	$.getJSON("default_settings.json", function(json) {
+		var keys = Object.keys(json);
+		for(var i = 0; i < keys.length; i++) {
+			if(getItem(keys[i], false) == '""') {
+				setItem(keys[i], json[keys[i]]);
+			}
+		}
 	});
 }
-
 
 
 </script>
@@ -551,6 +541,10 @@ function loadDefaultsIfNeeded() {
 
 <!-- import server_request.js -->
 <script type="text/javascript" src="js/server_requests.js"></script>
+
+<!-- import storage_wrappers.js -->
+<script type="text/javascript" src="js/storage_wrappers.js"></script>
+
 
 
 </body>

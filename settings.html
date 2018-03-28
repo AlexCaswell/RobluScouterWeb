@@ -32,7 +32,7 @@
  		<hr style="border: none; background-color: #888; height: 1px;">
  		<div class="indent_settings modal-trigger" href="#server_ip">
 	 		<p style=" font-size: 1.3em; color: #CCC; margin: 10px 0 0 0;">Server IP</p>
-	 		<p style=" color: #CCC; margin: 0 0 10px 0;">Set the IP address is you're using a custom server. Leave blank for the official Roblu Cloud server.</p>
+	 		<p style=" color: #CCC; margin: 0 0 10px 0;">Set the IP address if you're using a custom server. Leave blank for the official Roblu Cloud server.</p>
  		</div>
  		<hr style="border: none; background-color: #888; height: 1px;">
 		<div class="indent_settings modal-trigger" href="#team_code">
@@ -48,6 +48,7 @@
  		<style type="text/css">
  			.indent_settings {
  				padding-left: 6%;
+ 				cursor: pointer;
  			}
 
  			/* Change text input colors */
@@ -283,14 +284,16 @@
 		}
 
 	}
-
+	
 	//Checks if settings are set in localStorage. If they are not, set them to the defaults.
 	function loadDefaultsIfNeeded() {
-		$.getJSON("../default_settings.json", function(json) {
-			if (localStorage.getItem("username") == "") { localStorage.setItem("username", json.username); }
-			if (localStorage.getItem("serverIp") == "") { localStorage.setItem("serverIp", json.serverIp); }
-			if (localStorage.getItem("teamCode") == "") { localStorage.setItem("teamCode", json.teamCode); }
-			if (localStorage.getItem("autoCheckoutMode") == "") { localStorage.setItem("autoCheckoutMode", json.autoCheckoutMode); }
+		$.getJSON("default_settings.json", function(json) {
+			var keys = Object.keys(json);
+			for(var i = 0; i < keys.length; i++) {
+				if(getItem(keys[i], false) == '""') {
+					setItem(keys[i], json[keys[i]]);
+				}
+			}
 		});
 	}
 

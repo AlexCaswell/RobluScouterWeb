@@ -70,7 +70,7 @@
 		});
 
 		//Load checkout object
-		var checkout_content = JSON.parse( JSON.parse( JSON.parse( localStorage.getItem("editing_checkout") )[0] ).content ).replace("'", "\\\'");
+		var checkout_content = JSON.parse( JSON.parse( JSON.parse( localStorage.getItem("editing_checkout") )[0] ).content );
 
 		//get wheather checked out
 		var checked_out = JSON.parse(localStorage.getItem("editing_checkout"))[1];
