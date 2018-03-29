@@ -436,7 +436,7 @@ function get_chooser(params) {
 				<div class="valign-wrapper" style="width: 100%;"> \
 					<p style="color: #FFF; margin: 0;" class="card-title">' + params.title + '</p> \
 					<div style="pointer-events: ' + ck_out_value + '; text-align: right; margin-bottom: 10px;" metric=\'' + params.metric + '\' id="' + params.id + '"> \
-						<a id="select_' + params.id + '" data-activates=\'dl_' + params.id + '\' class="dropdown-button btn" style="background: #333; position: absolute; top: 27%; right: 30px;">' + params.values[params.selectedIndex] + '</a> \
+						<a id="select_' + params.id + '" data-activates=\'dl_' + params.id + '\' class="edit-db dropdown-button btn" style="background: #333; position: absolute; top: 27%; right: 30px;">' + params.values[params.selectedIndex] + '</a> \
       					<ul style="min-width: 250px; background: #333;" id="dl_' + params.id + '" class="dropdown-content"> \
       						' + options + ' \
       					</ul>\

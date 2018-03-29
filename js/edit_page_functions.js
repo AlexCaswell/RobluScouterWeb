@@ -81,13 +81,13 @@ function loadEditPage() {
 		setTimeout( function () { 
 			$('#tab_selectors').tabs();
 			// initialize settings dropdown
-			$('.dropdown-button').dropdown({
+			$('.edit-db').dropdown({
 				inDuration: 300,
 				outDuration: 225,
 				constrainWidth: false,
 				hover: false,
 				gutter: 0,
-				belowOrigin: true,
+				belowOrigin: false,
 				alignment: 'right',
 				stopPropagation: false
 			});
