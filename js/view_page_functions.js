@@ -174,31 +174,31 @@ function autoCheckout() {
 
 //upload a single checkout with status 2
 function completeCheckout(id) {
-	var checkout = JSON.parse($("#my_checkouts").find("#" + id).attr("checkout"));
+
+	//remove element
 	$("#my_checkouts").find("#" + id).css("display", "none");
 
+	//find checkout
 	var myCheckouts = JSON.parse(getItem("myCheckouts", true));
-	var ck_index;
-	//find checkout index in myCheckouts storage
 	for(var i = 0; i < myCheckouts.length; i++) {
-		if(myCheckouts[i].id == checkout.id) {
-			ck_index = i;
+		if(id == myCheckouts[i].id) {
+
+			var ck_content = JSON.parse(myCheckouts[i].content);
+			ck_content.status = 2;
+			myCheckouts[i].content = JSON.stringify(ck_content);
+			Materialize.toast("Checkout completed.", 2500);
+			pushCheckouts([myCheckouts[i]]);
+
+			//remove from array
+			myCheckouts.splice(i, 1);
+
+			//save changes in local storage
+			setItem("myCheckouts", JSON.stringify(myCheckouts));
+
 			break;
 		}
 	}
 
-	//remove from array
-	myCheckouts.splice(ck_index, 1);
-
-	//save changes in local storage
-	setItem("myCheckouts", JSON.stringify(myCheckouts));
-
-	var ck_content = JSON.parse(checkout.content);
-	ck_content.status = 2;
-	checkout.content = JSON.stringify(ck_content);
-	checkouts = [checkout];
-	Materialize.toast("Checkout completed.", 2500);
-	pushCheckouts(checkouts);
 }
 
 //uploads all checkouts in myCheckouts
