@@ -17,70 +17,44 @@ and that the functions in storage_wrappers are available.
 
 // return the response (in JS object) of the "getTeam" server request.
 function getTeamModel(callback) {
+	var eurl = "http://" + getItem("serverIp", false) + "/teams/getTeam?code=" + getItem("teamCode", false);
 	$.ajax({
-		type: 'GET',
-		url: "http://" + getItem("serverIp", false) + "/teams/getTeam",
-		data: { code: getItem("teamCode", false) }
+		type: 'POST',
+		url: 'request.php',
+		data: { url: eurl, post: false, params: null }
 	}).done( function ( data ) {
-		callback(data.data);
+		callback(JSON.parse(data).data);
 	});
 }
 
 
 function getIsActive(callback) {
+	var eurl = "http://" + getItem("serverIp", false) + "/teams/isActive?code=" + getItem("teamCode", false);
 	$.ajax({
-		type: 'GET',
-		url: "http://" + getItem("serverIp", false) + "/teams/isActive",
-		data: { code: getItem("teamCode", false) }
+		type: 'POST',
+		url: 'request.php',
+		data: { url: eurl, post: false, params: null }
 	}).done( function ( data ) {
-		callback(data.data);
+		callback(JSON.parse(data).data);
 	});
 }
 
-
 // populates array of all checkouts filtered by options in localStorage item "checkouts"
 function pullCheckouts(callback) {
-	//get syncIDs
-	var pullAll = false;
-	var syncIDs = [];
-	if(!pullAll && getItem("checkouts", true) !== "[]") {
-		var checkouts = JSON.parse(getItem("checkouts", true));
-		for(var i = 0; i < checkouts.length; i++) {
-			syncIDs[i] = {
-				checkoutID: checkouts[i].id,
-				syncID: checkouts[i].sync_id
-			};
-		}
-	} else {
-		pullAll = true;
-	}
 
 	//request checkouts
+	var eurl = "http://" + getItem("serverIp", false) + "/checkouts/pullCheckouts?code=" + getItem("teamCode", false) + "&pullAll=true";
 	$.ajax({
-		type: 'GET',
-		url: "http://" + getItem("serverIp", false) + "/checkouts/pullCheckouts",
-		data: { code: getItem("teamCode", false), pullAll: pullAll, syncIDs: JSON.stringify(syncIDs) }
+		type: 'POST',
+		url: "request.php",
+		data: { url: eurl, post: false, params: null }
 	}).done( function( data ) {
+	// $.getJSON("checkout_request.json", function (data) {
+		data = JSON.parse(data);
 		if(data.status != "success") {
 			Materialize.toast("ERROR: unable to pull checkouts from server", 2500);
-		} else {
-			//update local checkouts
-			if(!pullAll) {
-			var localCheckouts = JSON.parse(getItem("checkouts", true));
-				for(var i = 0; i < data.data.length; i++) {
-					var checkout = data.data[i];
-					for(var j = 0; j < localCheckouts.length; j++) {
-						if(localCheckouts[j].id == checkout.id) {
-							localCheckouts[j] = checkout;
-						}
-					}
-				}
-				setItem("checkouts", JSON.stringify(localCheckouts));
-			}else {
-				setItem("checkouts", JSON.stringify(data.data));
-			}
-			console.log(data.data.length);
 		}
+		console.log(data.data.length);
 		callback(data);
 	});
 }
@@ -92,11 +66,14 @@ function pushCheckouts(checkouts) {
 	for(var i = 0; i < checkouts.length; i++) {
 		checkouts[i] = JSON.parse(checkouts[i].content);
 	}
+	var eurl = "http://" + getItem("serverIp", false) + "/checkouts/pushCheckouts";
+	var params = {"code": getItem("teamCode", false), "content": JSON.stringify(checkouts)};
 	$.ajax({
 		type: 'POST',
-		url: "http://" + getItem("serverIp", false) + "/checkouts/pushCheckouts",
-		data: { code: getItem("teamCode", false), content: JSON.stringify(checkouts) }
+		url: "request.php",
+		data: { post: true, url: eurl, params: JSON.stringify(params)  }
 	}).done( function (data) {
+		data = JSON.parse(data);
 		if(data.status !== "success") {
 			Materialize.toast("ERROR: upload unsuccessful", 2500);
 		}
