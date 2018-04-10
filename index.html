@@ -273,6 +273,12 @@
 	var cardColor = "#444444";
 	var backgroundColor = "#303030";
 
+	//Global checkouts objects
+	var CHECKOUTS = [];
+
+	var CHECKOUTS_LOADED = 0;
+	var MY_CHECKOUTS_LOADED = 0;
+
 
 	$(document).ready(function() {
 
@@ -325,6 +331,20 @@
 		loadEditPage(); //update edit page
 
  	});
+
+ 	$(window).on("scroll", function() {
+		var scrollHeight = $(document).height();
+		var scrollPosition = $(window).height() + $(window).scrollTop();
+		if ((scrollHeight - scrollPosition) / scrollHeight === 0) {
+		    // when scroll to bottom of the page, load more checkouts
+		    if($("#checkouts").hasClass("active")) {
+		    	loadCheckouts(CHECKOUTS_LOADED, CHECKOUTS_LOADED + 30, function() {});
+		    }else if ($("#my_checkouts").hasClass("active")) {
+		    	loadMyCheckouts(MY_CHECKOUTS_LOADED, MY_CHECKOUTS_LOADED + 30);
+		    }
+		    
+		}
+	});
 
 </script>
 
