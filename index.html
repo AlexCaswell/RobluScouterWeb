@@ -18,58 +18,60 @@
 	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 </head>
 <body>
-	<div id="view_page">
-	 	<nav class="nav-extended" style="position: fixed; top: 0; left: 0; z-index: 9999;">
-	 		<div class="nav-wrapper">
-	      		<a id="title" style="font-size: 1.6rem; padding: 20px 0 5px 20px; display: block; line-height: 1.6rem;"><br></a>
-	      		<a id="active_event_label" style="font-size: 1.1rem; padding: 0 0 10px 25px; display: block; line-height: 1.1rem;"><br></a>
+	<div id="view_page" style="position: fixed; width: 100%; height: 100vh; overflow: scroll;">
+		<div style="overflow: auto;">
+		 	<nav class="nav-extended" style="position: fixed; top: 0; left: 0; z-index: 9999;">
+		 		<div class="nav-wrapper">
+		      		<a id="title" style="font-size: 1.6rem; padding: 20px 0 5px 20px; display: block; line-height: 1.6rem;"><br></a>
+		      		<a id="active_event_label" style="font-size: 1.1rem; padding: 0 0 10px 25px; display: block; line-height: 1.1rem;"><br></a>
 
-	      		<!-- settings button and menu -->
-				<a href="#" id="settings_button" data-activates='settings_list' class="dropdown-button" style="position: absolute; top: 5px; right: 15px;"><i class="material-icons">more_vert</i></a>
-	      		<ul style="margin-top: 20px; margin-right: 30px; background: #546E7A; min-width: 250px;" id="settings_list" class="dropdown-content"><style type="text/css">#settings_list li a { color: #FFF; }</style>
-	      			<li>
-						<a>
-							<input type="checkbox" onclick="filterCheckouts();" class="filled-in checkbox-color" id="show_pit_checkouts" checked="checked" />
-							<label style="color: #FFF;" for="show_pit_checkouts">Show pit checkouts</label>
-						</a>
-	      			</li>
-	      			<li>
-						<a>
-							<input type="checkbox" onclick="filterCheckouts();" class="filled-in checkbox-color" id="show_completed_checkouts" checked="checked"/>
-							<label style="color: #FFF;" for="show_completed_checkouts">Show completed</label>
-						</a>
-	      			</li>
-	      			<li>
-						<a>
-							<input type="checkbox" onclick="filterCheckouts();" class="filled-in checkbox-color" id="show_checked_out" checked="checked"/>
-							<label style="color: #FFF;" for="show_checked_out">Show checked out</label>
-						</a>
-	      			</li>
-	      			<li><a id="settings" onclick="changePage('settings');">Settings</a></li>
-	      		</ul>
-	      		<!-- change textbox color -->
-	      		<style type="text/css">
-	      			.checkbox-color[type='checkbox'].filled-in:checked + label:after {
-	      				background: #444;
-	      				border: #444;
-	      			}
-	      		</style>
+		      		<!-- settings button and menu -->
+					<a href="#" id="settings_button" data-activates='settings_list' class="dropdown-button" style="position: absolute; top: 5px; right: 15px;"><i class="material-icons">more_vert</i></a>
+		      		<ul style="margin-top: 20px; margin-right: 30px; background: #546E7A; min-width: 250px;" id="settings_list" class="dropdown-content"><style type="text/css">#settings_list li a { color: #FFF; }</style>
+		      			<li>
+							<a>
+								<input type="checkbox" onclick="filterCheckouts();" class="filled-in checkbox-color" id="show_pit_checkouts" checked="checked" />
+								<label style="color: #FFF;" for="show_pit_checkouts">Show pit checkouts</label>
+							</a>
+		      			</li>
+		      			<li>
+							<a>
+								<input type="checkbox" onclick="filterCheckouts();" class="filled-in checkbox-color" id="show_completed_checkouts" checked="checked"/>
+								<label style="color: #FFF;" for="show_completed_checkouts">Show completed</label>
+							</a>
+		      			</li>
+		      			<li>
+							<a>
+								<input type="checkbox" onclick="filterCheckouts();" class="filled-in checkbox-color" id="show_checked_out" checked="checked"/>
+								<label style="color: #FFF;" for="show_checked_out">Show checked out</label>
+							</a>
+		      			</li>
+		      			<li><a id="settings" onclick="changePage('settings');">Settings</a></li>
+		      		</ul>
+		      		<!-- change textbox color -->
+		      		<style type="text/css">
+		      			.checkbox-color[type='checkbox'].filled-in:checked + label:after {
+		      				background: #444;
+		      				border: #444;
+		      			}
+		      		</style>
 
-	  		</div>
+		  		</div>
 
-	  		<!-- tab selector -->
-		    <div class="nav-content">
-		      <ul class="tabs tabs-transparent">
-		        <li class="tab"><a id="mc_a" href="#my_checkouts">My Checkouts</a></li>
-		        <li class="tab"><a id="c_a" class="active" href="#checkouts">Checkouts</a></li>
-		      </ul>
-		    </div>
-	 	</nav><br><br><br><br><br><br>
+		  		<!-- tab selector -->
+			    <div class="nav-content">
+			      <ul class="tabs tabs-transparent">
+			        <li class="tab"><a id="mc_a" href="#my_checkouts">My Checkouts</a></li>
+			        <li class="tab"><a id="c_a" class="active" href="#checkouts">Checkouts</a></li>
+			      </ul>
+			    </div>
+		 	</nav><br><br><br><br><br><br>
 
-	 	<!-- "Checkouts" tab -->
-	 	<div id="checkouts" class="col s12" style="margin: 0 3% 0 3%;"></div>
-	 	<!-- "My Checkouts" tab -->
-	 	<div id="my_checkouts" class="col s12" style="margin: 0 3% 0 3%;"></div>
+		 	<!-- "Checkouts" tab -->
+		 	<div id="checkouts" class="col s12" style="padding: 0 3% 0 3%;"></div>
+		 	<!-- "My Checkouts" tab -->
+		 	<div id="my_checkouts" class="col s12" style="padding: 0 3% 0 3%;"></div>
+	 	</div>
  	</div>
 
  	<div id="settings_page" style="display: none;">
@@ -332,17 +334,16 @@
 
  	});
 
- 	$(window).on("scroll", function() {
-		var scrollHeight = $(document).height();
-		var scrollPosition = $(window).height() + $(window).scrollTop();
-		if ((scrollHeight - scrollPosition) / scrollHeight === 0) {
+ 	$("#view_page").on("scroll", function() {
+		var pageHeight = $("#view_page div").height();
+		var scrollPosition = $(window).height() + $("#view_page").scrollTop();
+		if (pageHeight === scrollPosition) {
 		    // when scroll to bottom of the page, load more checkouts
 		    if($("#checkouts").hasClass("active")) {
-		    	loadCheckouts(CHECKOUTS_LOADED, CHECKOUTS_LOADED + 30, function() {});
-		    }else if ($("#my_checkouts").hasClass("active")) {
-		    	loadMyCheckouts(MY_CHECKOUTS_LOADED, MY_CHECKOUTS_LOADED + 30);
+	    		loadCheckouts(CHECKOUTS_LOADED, CHECKOUTS_LOADED + 30, function() {});
+		    }else if($("#my_checkouts").hasClass("active")) {
+		    	loadMyCheckouts(MY_CHECKOUTS_LOADED, MY_CHECKOUTS_LOADED + 30, function() {});
 		    }
-		    
 		}
 	});
 

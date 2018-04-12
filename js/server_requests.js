@@ -35,7 +35,8 @@ function getIsActive(callback) {
 		url: 'request.php',
 		data: { url: eurl, post: false, params: null }
 	}).done( function ( data ) {
-		callback(JSON.parse(data).data);
+		// callback(JSON.parse(data).data);
+		callback(true);
 	});
 }
 
@@ -43,14 +44,14 @@ function getIsActive(callback) {
 function pullCheckouts(callback) {
 
 	//request checkouts
-	var eurl = "http://" + getItem("serverIp", false) + "/checkouts/pullCheckouts?code=" + getItem("teamCode", false) + "&pullAll=true";
-	$.ajax({
-		type: 'POST',
-		url: "request.php",
-		data: { url: eurl, post: false, params: null }
-	}).done( function( data ) {
-	// $.getJSON("checkout_request.json", function (data) {
-		data = JSON.parse(data);
+	// var eurl = "http://" + getItem("serverIp", false) + "/checkouts/pullCheckouts?code=" + getItem("teamCode", false) + "&pullAll=true";
+	// $.ajax({
+	// 	type: 'POST',
+	// 	url: "request.php",
+	// 	data: { url: eurl, post: false, params: null }
+	// }).done( function( data ) {
+	$.getJSON("checkout_request.json", function (data) {
+		// data = JSON.parse(data);
 		if(data.status != "success") {
 			Materialize.toast("ERROR: unable to pull checkouts from server", 2500);
 		}
