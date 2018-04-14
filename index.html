@@ -18,7 +18,7 @@
 	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 </head>
 <body>
-	<div id="view_page" style="position: fixed; width: 100%; height: 100vh; overflow: scroll;">
+	<div id="view_page">
 		<div style="overflow: auto;">
 		 	<nav class="nav-extended" style="position: fixed; top: 0; left: 0; z-index: 9999;">
 		 		<div class="nav-wrapper">
@@ -334,17 +334,18 @@
 
  	});
 
- 	$("#view_page").on("scroll", function() {
-		var pageHeight = $("#view_page div").height();
-		var scrollPosition = $(window).height() + $("#view_page").scrollTop();
-		if (pageHeight === scrollPosition) {
-		    // when scroll to bottom of the page, load more checkouts
-		    if($("#checkouts").hasClass("active")) {
-	    		loadCheckouts(CHECKOUTS_LOADED, CHECKOUTS_LOADED + 30, function() {});
-		    }else if($("#my_checkouts").hasClass("active")) {
-		    	loadMyCheckouts(MY_CHECKOUTS_LOADED, MY_CHECKOUTS_LOADED + 30, function() {});
-		    }
-		}
+	$(window).scroll(function() {
+	   if($(window).scrollTop() + $(window).height() == $(document).height()) {
+		   	if(!$("#view_page").is(":hidden")) {
+		   		console.log($("#view_page").is(":hidden"));
+	   		    // when scroll to bottom of the page, load more checkouts
+			    if($("#checkouts").hasClass("active")) {
+		    		loadCheckouts(CHECKOUTS_LOADED, CHECKOUTS_LOADED + 30, function() {});
+			    }else if($("#my_checkouts").hasClass("active")) {
+			    	loadMyCheckouts(MY_CHECKOUTS_LOADED, MY_CHECKOUTS_LOADED + 30, function() {});
+			    }
+		   	}
+	   }
 	});
 
 </script>
