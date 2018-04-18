@@ -337,10 +337,11 @@
 	$(window).scroll(function() {
 	   if($(window).scrollTop() + $(window).height() == $(document).height()) {
 		   	if(!$("#view_page").is(":hidden")) {
-		   		console.log($("#view_page").is(":hidden"));
 	   		    // when scroll to bottom of the page, load more checkouts
 			    if($("#checkouts").hasClass("active")) {
-		    		loadCheckouts(CHECKOUTS_LOADED, CHECKOUTS_LOADED + 30, function() {});
+		    		loadCheckouts(CHECKOUTS_LOADED, CHECKOUTS_LOADED + 30, function() {
+		    			filterCheckouts();
+		    		});
 			    }else if($("#my_checkouts").hasClass("active")) {
 			    	loadMyCheckouts(MY_CHECKOUTS_LOADED, MY_CHECKOUTS_LOADED + 30, function() {});
 			    }
