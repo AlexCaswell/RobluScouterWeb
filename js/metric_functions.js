@@ -363,6 +363,8 @@ function get_slider(params) {
 					    <style> \
 							input[type=range]::-webkit-slider-thumb { \
 								background-color: #333; \
+								height: 18px; \
+								width: 18px; \
 							} \
 							input[type=range]::-webkit-slider-runnable-track { \
 								background: #999; \
@@ -373,9 +375,13 @@ function get_slider(params) {
 							} \
 							input[type=range]::-moz-range-thumb { \
 								background-color: #333; \
+								height: 18px; \
+								width: 18px; \
 							} \
 							input[type=range]::-ms-thumb { \
 								background-color: #333; \
+								height: 18px; \
+								width: 18px; \
 							} \
 							/***** These are to edit the thumb and the text inside the thumb *****/ \
 							input[type=range] + .thumb { \

@@ -334,14 +334,13 @@
 
  	});
 
+ 	//load more when scrolled to bottom of page
 	$(window).scroll(function() {
-	   if($(window).scrollTop() + $(window).height() == $(document).height()) {
+	   if(($(window).scrollTop() + $(window).height()) == $(document).height()) {
 		   	if(!$("#view_page").is(":hidden")) {
 	   		    // when scroll to bottom of the page, load more checkouts
 			    if($("#checkouts").hasClass("active")) {
-		    		loadCheckouts(CHECKOUTS_LOADED, CHECKOUTS_LOADED + 30, function() {
-		    			filterCheckouts();
-		    		});
+		    		loadCheckouts(CHECKOUTS_LOADED, CHECKOUTS_LOADED + 30, function() {});
 			    }else if($("#my_checkouts").hasClass("active")) {
 			    	loadMyCheckouts(MY_CHECKOUTS_LOADED, MY_CHECKOUTS_LOADED + 30, function() {});
 			    }
@@ -352,6 +351,13 @@
 </script>
 
 <script type="text/javascript">
+
+//makes sure page is filled beyond window height (scrollable)
+function fillPage() {
+ 	if($(window).height <= $(document).height && CHECKOUTS.length >= 30) {
+ 		loadCheckouts(CHECKOUTS_LOADED, CHECKOUTS_LOADED + 30, function() {});
+ 	}
+}
 
 function updateTitle() {
 	// Set scouter role from settings

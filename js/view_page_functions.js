@@ -42,6 +42,7 @@ function load() {
 					getTeamModel( function(team_data) {
 						$("#active_event_label").html(team_data.active_event_name + " - <a href='#' style='text-decoration: underline;'onclick='load();'>Reload</a>");
 						autoCheckout();
+						fillPage();
 					});
 				});
 			}, 30);
@@ -95,6 +96,7 @@ function loadCheckouts(start, limit, callback) {
 		$("#checkouts").html($("#checkouts").html() + get_checkout(params));
 
 	}
+	filterCheckouts();
 	callback("finished");
 
 }
@@ -168,11 +170,17 @@ function autoCheckout() {
 		    	}
 		    	if(!unique) continue;
 
-		    	//add to myCheckouts
+		    	//change status/nameTag and add to myCheckouts
+		    	checkout.nameTag = getItem("username", false);
+		    	checkout.status = 1;
+		    	CHECKOUTS[i].content = JSON.stringify(checkout);
 	    		myCheckouts[myCheckouts.length] = CHECKOUTS[i];
 			}
 			//store myCheckouts
 			setItem("myCheckouts", JSON.stringify(myCheckouts));
+
+			//update server status'
+			uploadMyCheckouts(false);
 		}
 		//refresh view
 		updateTitle();
