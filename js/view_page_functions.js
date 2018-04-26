@@ -85,6 +85,7 @@ function loadCheckouts(start, limit, callback) {
 		}
 		var params = {
 			team: checkout_content.team.name,
+			number: checkout_content.team.number,
 			type: checkout_content.team.tabs[0].matchType,
 			match_order: checkout_content.team.tabs[0].matchOrder,
 			cardColor: cardColor,
@@ -335,6 +336,7 @@ function loadMyCheckouts(start, limit) {
 		}
 		var params = {
 			team: checkout_content.team.name,
+			number: checkout_content.team.number,
 			type: checkout_content.team.tabs[0].matchType,
 			match_order: checkout_content.team.tabs[0].matchOrder,
 			cardColor: cardColor,
@@ -360,7 +362,7 @@ return ' \
 	<div class="card blue-grey darken-1" style="background: ' + params.cardColor + ' !important;" id="' + params.id + '"> \
 		<div class="card-content white-text" onclick="' + params.onclick + '"> \
 			<div> \
-				<span style="color: #FFF;" class="card-title">' + params.team + '</span> \
+				<span style="color: #FFF;" class="card-title">' + params.number + " - " + params.team + '</span> \
 				<p style="color: #FFF;">' + title + '</p> \
 				<p style="color: #FFF;">' + params.available + '</p> \
 			</div> \

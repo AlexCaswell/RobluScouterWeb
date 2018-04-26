@@ -39,7 +39,7 @@ function getIsActive(callback) {
 	});
 }
 
-// populates array of all checkouts filtered by options in localStorage item "checkouts"
+// populates and sorts by match number array of all checkouts filtered by options in localStorage item "checkouts"
 function pullCheckouts(callback) {
 
 	//request checkouts
@@ -55,6 +55,33 @@ function pullCheckouts(callback) {
 			Materialize.toast("ERROR: unable to pull checkouts from server", 2500);
 		}
 		console.log(data.data.length);
+
+		//sort by match number (selection sort)
+		var checkouts = data.data;
+
+		var len = checkouts.length, min;
+
+	    for (var i = 0; i < len; i++) {
+
+	        //set minimum to this position
+	        min = i;
+
+	        //check the rest of the array to see if anything is smaller
+	        for (var j = i+1; j < len; j++){
+	            if (JSON.parse(checkouts[j].content).team.tabs[0].matchOrder < JSON.parse(checkouts[min].content).team.tabs[0].matchOrder){
+	                min = j;
+	            }
+	        }
+
+	        //if the minimum isn't in the position, swap it
+	        if (i != min){
+	            var temp = checkouts[i];
+	            checkouts[i] = checkouts[min];
+	            checkouts[min] = temp;
+	        }
+	    }
+
+		data.data = checkouts;
 		callback(data);
 	});
 }
